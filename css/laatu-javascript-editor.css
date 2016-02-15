@@ -1,0 +1,38 @@
+.laatu-js-editor-line-numbers {
+  background: #7994AC;
+  text-align: right;
+  width: 40px;
+  float: left;
+  padding-right: 2px;
+  overflow: hidden;
+}
+.laatu-js-editor-line-numbers pre {
+  margin: 0;
+  padding: 0;
+}
+.laatu-js-editor-lines {
+  background: #4F6272;
+  float: left;
+  clear: right;
+  padding: 0;
+  overflow: scroll;
+}
+.laatu-js-editor-lines pre {
+  margin: 0;
+  padding: 0;
+  color: #eeeeee;
+}
+.laatu-js-editor-lines pre:last-child {
+  border-bottom: solid 1px #88AFD0;
+}
+.laatu-js-editor-cursor {
+  margin: 0;
+  padding: 0;
+}
+.laatu-js-editor-cursor pre {
+  margin: 0;
+  padding: 0;
+  color: #ffffff;
+  background:#313C4C;
+  opacity:0.7;
+}

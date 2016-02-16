@@ -49,7 +49,12 @@ var laatuJsEditor = {
     var el_lines = document.createElement('div');
     el_lines.className = 'laatu-js-editor-lines';
     el_lines.id = id + '_laatu-js-editor-lines';
-    var cnt_lines = el_textarea.value.match(/\n/g).length + 1;
+    var match = el_textarea.value.match(/\n/g);
+    if (match !== null) {
+      var cnt_lines = match.length + 1;
+    } else {
+      var cnt_lines = 1;
+    }
     var arr_lines = el_textarea.value.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ").split(/\n/);
     var line_numbers = '';
     var lines_content = '';

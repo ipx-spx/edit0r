@@ -79,6 +79,7 @@ var laatuJsEditor = {
     this.createCursor(id);
     this.setCursorPosition(0,0);
     this.attachKeys(id);
+    this.attachClick(id);
     this.attachScrollEvent(id);
     this.attachResizeEvent(id);
   },
@@ -208,6 +209,12 @@ var laatuJsEditor = {
         laatuJsEditor.insertChar(val, id);
       }
       this.value = '';
+    }
+  },
+  attachClick: function(id) {
+    document.getElementById(id+'_laatu-js-editor-lines').onclick = function() {
+      var id = this.id.split('_')[0];
+      document.getElementById(id+'_laatu-js-editor-cursor-input').focus();
     }
   },
   attachScrollEvent: function(id) {

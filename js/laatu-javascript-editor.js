@@ -116,24 +116,40 @@ var laatuJsEditor = {
     lines_obj.style.width = (textarea_coords.w-line_numbers_coords.w)+'px';
     return lines_obj;
   },
+  _createChar: function(id) {
+    var char_obj = _h.newObj('span', {
+      className: 'laatu-js-editor-char',
+      id: id + '_laatu-js-editor-char',
+      innerHTML: '&nbsp;'
+    });
+    _h.appendObj(char_obj, document.body);
+    return char_obj;
+  },
+  _createCursor: function(id, char_obj) {
+    var char_coords = _h.coords(char_obj);
+    var cursor_obj = _h.newObj('div', {
+      className: 'laatu-js-editor-cursor',
+      id: id + '_laatu-js-editor-cursor',
+      innerHTML: '<textarea rows="1" id="'+id+'_laatu-js-editor-cursor-input"></textarea>',
+      style: { height: char_coords.h+'px' }
+    });
+    _h.appendObj(cursor_obj, document.body);
+  },
 
   init: function(id) {
     if (!_h.obj(id, 'Element with id ' + id + ' not found.'))
       return false;
     
     this.currentId = id;
-
     var textarea_obj = _h.obj(id);
 
     var textarea_coords = _h.coords(textarea_obj);
     var container_obj = this._createContainer(id, textarea_coords.l, textarea_coords.t);
-
     var line_numbers_obj = this._createLineNumbers(id, container_obj);
+    this._createLines(id, textarea_obj, container_obj, line_numbers_obj);
+    var char_obj = this._createChar(id);
+    this._createCursor(id, char_obj);
 
-    var lines_obj = this._createLines(id, textarea_obj, container_obj, line_numbers_obj);
-
-    this.createChar(id);
-    this.createCursor(id);
     this.setCursorPosition(0,0);
     this.attachKeys(id);
     this.attachClick(id);
@@ -152,13 +168,6 @@ var laatuJsEditor = {
       el_lines.style.height = h+'px';
       el_lines.style.width = (w-el_line_numbers_w)+'px';
     }
-  },
-  createChar: function(id) {
-    var el_char = document.createElement('span');
-    el_char.className = 'laatu-js-editor-char';
-    el_char.id = id + '_laatu-js-editor-char';
-    el_char.innerHTML = '&nbsp;';
-    document.body.appendChild(el_char);
   },
   createCursor: function(id) {
     var el_cursor = document.createElement('div');

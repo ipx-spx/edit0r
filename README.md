@@ -18,11 +18,8 @@ Features to be implemented:
 
 ### Known bugs so far
 This list should probably be much longer:
-* init error when *textarea* is empty;
 * when line gets empty, a space is getting inserted so that *pre* tag does not dissapear;
 * cursor should not get out of the box (both up and down);
 * if cursor gets out of the element then lines container should be scrolled so that the cursor stays viewable;
-* there might be problems with utf8 characters as this was yet not tested;
-* alt key should be unlocked;
 * when focus on *document.body* is lost then it is hard to focus back and continue editting (this happens when textarea covers
 all the browser window).

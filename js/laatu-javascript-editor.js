@@ -107,6 +107,9 @@ var laatuJsEditor = {
     el_cursor.className = 'laatu-js-editor-cursor';
     el_cursor.id = id + '_laatu-js-editor-cursor';
     el_cursor.innerHTML = '<textarea rows="1" id="'+id+'_laatu-js-editor-cursor-input"></textarea>';
+    var el_char = document.getElementById(id+'_laatu-js-editor-char');
+    var char_h = $(el_char).height();
+    el_cursor.style.height = char_h+'px';
     document.body.appendChild(el_cursor);
   },
   setCursorPosition: function(row, col, id) {

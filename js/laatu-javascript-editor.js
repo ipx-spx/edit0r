@@ -1,16 +1,9 @@
 // by Nicholas Gasior. (c) laatu.uk
 
-var __entityMap = {
-  "<": "&lt;",
-  ">": "&gt;",
-};
-
-String.prototype.escapeHtml = function() {
-  return String(this).replace(/[<>]/g, function (s) {
-    return __entityMap[s];
-  });
+String.prototype.encodeHtml = function() {
+  return String(this).replace('<', '&lt;').replace('>', '&gt');
 }
-String.prototype.replaceHtml = function() {
+String.prototype.decodeHtml = function() {
   return String(this).replace(/\&lt\;/g, '<').replace(/\&gt\;/g, '>');
 }
 
@@ -65,7 +58,7 @@ var laatuJsEditor = {
       if (arr_lines[i] == '') {
         arr_lines[i] = ' ';
       }
-      lines_content = lines_content + '<pre>' + arr_lines[i].escapeHtml() + '</pre>';
+      lines_content = lines_content + '<pre>' + arr_lines[i].encodeHtml() + '</pre>';
     }
     el_lines.innerHTML = lines_content;
     el_line_numbers.innerHTML = '<pre>' + line_numbers + '</pre>';
@@ -231,7 +224,7 @@ var laatuJsEditor = {
       if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
         if (i == row) {
 
-          return el_lines.childNodes[i].innerHTML.replaceHtml().length;
+          return el_lines.childNodes[i].innerHTML.decodeHtml().length;
         }
       }
     }
@@ -244,7 +237,7 @@ var laatuJsEditor = {
       if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
         if (i == row) {
 
-          return el_lines.childNodes[i].innerHTML.replaceHtml();
+          return el_lines.childNodes[i].innerHTML.decodeHtml();
         }
       }
     }
@@ -264,7 +257,7 @@ var laatuJsEditor = {
           if (content == '') {
             content = ' ';
           }
-          el_lines.childNodes[i].innerHTML = content.escapeHtml();
+          el_lines.childNodes[i].innerHTML = content.encodeHtml();
         }
       }
     }
@@ -280,7 +273,7 @@ var laatuJsEditor = {
             content = ' ';
           }
           var new_line = document.createElement('pre');
-          new_line.innerHTML = content.escapeHtml();
+          new_line.innerHTML = content.encodeHtml();
           if (i == lines_cnt) {
             el_lines.appendChild(new_line);
           } else {

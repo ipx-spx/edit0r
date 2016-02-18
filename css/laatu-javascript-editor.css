@@ -1,3 +1,7 @@
+.laatu-js-editor {
+  font-family: courier;
+  font-size: 13px;  
+}
 .laatu-js-editor-line-numbers {
   background: #7994AC;
   text-align: right;
@@ -29,10 +33,24 @@
   margin: 0;
   padding: 0;
 }
-.laatu-js-editor-cursor pre {
+.laatu-js-editor-char {
   margin: 0;
   padding: 0;
+  background: none;
+  opacity: 1;
   color: #ffffff;
-  background:#313C4C;
-  opacity:0.7;
+  font-family: courier;
+  font-size: 13px;
 }
+.laatu-js-editor-cursor textarea {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #eeeeee;
+  background: none;
+  font-family: courier;
+  font-size: 13px;
+  text-align: left;
+  resize: none;
+}
+.

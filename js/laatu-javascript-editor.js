@@ -75,7 +75,9 @@ var laatuJsEditor = {
     el_lines.style.height = h+'px';
     el_lines.style.width = (w-el_line_numbers_w)+'px';
 
+    this.createChar(id);
     this.createCursor(id);
+    this.setCursorPosition(0,0);
     this.attachKeys(id);
     this.attachScrollEvent(id);
     this.attachResizeEvent(id);
@@ -93,13 +95,19 @@ var laatuJsEditor = {
       el_lines.style.width = (w-el_line_numbers_w)+'px';
     }
   },
+  createChar: function(id) {
+    var el_char = document.createElement('span');
+    el_char.className = 'laatu-js-editor-char';
+    el_char.id = id + '_laatu-js-editor-char';
+    el_char.innerHTML = '&nbsp;';
+    document.body.appendChild(el_char);
+  },
   createCursor: function(id) {
     var el_cursor = document.createElement('div');
     el_cursor.className = 'laatu-js-editor-cursor';
     el_cursor.id = id + '_laatu-js-editor-cursor';
-    el_cursor.innerHTML = '<pre>&nbsp;</pre>';
+    el_cursor.innerHTML = '<textarea rows="1" id="'+id+'_laatu-js-editor-cursor-input"></textarea>';
     document.body.appendChild(el_cursor);
-    this.setCursorPosition(0, 0);
   },
   setCursorPosition: function(row, col, id) {
     if (typeof(id) != 'string') {
@@ -111,21 +119,24 @@ var laatuJsEditor = {
     var t2 = $('#'+id+'_laatu-js-editor-lines').position().top;
     var scroll = this.getScroll();
     var el_cursor = document.getElementById(id+'_laatu-js-editor-cursor');
-    var cursor_w = $(el_cursor).width(), cursor_h = $(el_cursor).height();
+    var el_char = document.getElementById(id+'_laatu-js-editor-char');
+    var char_w = $(el_char).width(), char_h = $(el_char).height();
     el_cursor.style.zIndex=2000;
     el_cursor.style.position='absolute';
-    el_cursor.style.left=(l1+l2+(col*cursor_w)-scroll.l)+'px';
-    el_cursor.style.top=(t1+t2+(row*cursor_h)-scroll.t)+'px';
-    var el_textarea = document.getElementById(id);
+    el_cursor.style.left=(l1+l2+(col*char_w)-scroll.l)+'px';
+    el_cursor.style.top=(t1+t2+(row*char_h)-scroll.t)+'px';
     el_cursor.col = col;
     el_cursor.row = row;
+    document.getElementById(id+'_laatu-js-editor-cursor-input').focus();
   },
   refreshCursorPosition: function(id) {
     var el_cursor = document.getElementById(id+'_laatu-js-editor-cursor');
     this.setCursorPosition(el_cursor.row, el_cursor.col, id);
   },
-  getCursorPosition: function() {
-    var id = laatuJsEditor.currentId;
+  getCursorPosition: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
     var el_cursor = document.getElementById(id+'_laatu-js-editor-cursor');
     var col = el_cursor.col;
     var row = el_cursor.row;
@@ -171,7 +182,10 @@ var laatuJsEditor = {
       if (laatuJsEditor.keyAltDown || laatuJsEditor.keyCtrlDown)
         return null;
 
-      evt.preventDefault();
+      if (evt.keyCode==37 || evt.keyCode==39 || evt.keyCode==38 || evt.keyCode==40 || evt.keyCode==8 || evt.keyCode==46 || evt.keyCode==13) {
+        evt.preventDefault();
+      }
+
       switch (evt.keyCode) {
         case 37: laatuJsEditor.moveCursorLeft(); break;
         case 39: laatuJsEditor.moveCursorRight(); break;
@@ -181,9 +195,16 @@ var laatuJsEditor = {
         case 46: laatuJsEditor.removeCharRight(); break;
         case 13: laatuJsEditor.breakLine(); break;
         default: 
-          laatuJsEditor.insertChar(String.fromCharCode(evt.charCode));
           break;
       }
+    }
+    document.getElementById(id+'_laatu-js-editor-cursor-input').onkeyup = function(evt) {
+      var id = this.id.split('_')[0];
+      var val = this.value;
+      if (val != '') { 
+        laatuJsEditor.insertChar(val, id);
+      }
+      this.value = '';
     }
   },
   attachScrollEvent: function(id) {
@@ -290,11 +311,14 @@ var laatuJsEditor = {
       this.setCursorPosition(pos.r, pos.c-1);
     }
   },
-  moveCursorRight: function() {
+  moveCursorRight: function(c) {
+    if (typeof(c) != 'number') {
+      var c = 1;
+    }
     var pos = this.getCursorPosition();
     var line_cols = this.getLineColsCount(pos.r);
     if (pos.c < line_cols) {
-      this.setCursorPosition(pos.r, pos.c+1);
+      this.setCursorPosition(pos.r, pos.c+c);
     }
   },
   moveCursorUp: function() {
@@ -322,13 +346,16 @@ var laatuJsEditor = {
       this.setCursorPosition(pos.r + 1, col);
     }
   },
-  insertChar: function(c) {
+  insertChar: function(c, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
     var pos = this.getCursorPosition();
     var line = this.getLine(pos.r);
     var left = line.substring(0, pos.c);
     var right = line.substring(pos.c);
     this.replaceLine(pos.r, left + c + right);
-    this.moveCursorRight();
+    this.moveCursorRight(c.length);
   },
   removeChar: function(col) {
     var pos = this.getCursorPosition();

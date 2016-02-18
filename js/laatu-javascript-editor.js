@@ -7,48 +7,93 @@ String.prototype.decodeHtml = function() {
   return String(this).replace(/\&lt\;/g, '<').replace(/\&gt\;/g, '>');
 }
 
-var laatuJsEditor = {
-  currentId: '',
-  keyShiftDown: false,
-  keyAltDown: false,
-  keyCtrlDown: false,
-  lineNumberAddon: 100,
-  init: function(id) {
-    if (document.getElementById(id) === null) {
-      console.log('Element with id ' + id + ' not found.');
-      return false;
+// Little helper.
+var _h = {
+  obj: function(id, errMsg) {
+    var o = document.getElementById(id);
+    if (o === null) {
+      console.log(errMsg);
     }
-    this.currentId = id;
+    return o;
+  },
+  coords: function(obj) {
+    if (typeof(obj) == 'string') {
+      var obj = this.__obj(obj);
+    }
+    // @todo Can vanilla javascript be used here instead of jQuery?
+    return {
+      w: $(obj).width(),
+      h: $(obj).height(),
+      l: $(obj).position().left,
+      t: $(obj).position().top
+    };
+  },
+  // To be used only in sensible places, eg. when object is created once for a lifetime.
+  newObj: function(type, properties) {
+    var o = document.createElement(type);
+    if (typeof(properties) == 'object') {
+      for (p in properties) {
+        if (typeof(properties[p]) == 'object') {
+          for (p2 in properties[p]) {
+            o[p][p2] = properties[p][p2];
+          }
+        } else {
+          o[p] = properties[p];
+        }
+      }
+    }
+    return o;
+  },
+  appendObj: function(obj, tgt) {
+    tgt.appendChild(obj);
+  }
+}
 
-    var el_textarea = document.getElementById(id);
+var laatuJsEditor = {
+  // There might be many instance of laatuJsEditor but only one of them can be active (at least so far).
+  // Possible @todo is to make this an array so that text might be input in many windows.
+  currentId:       '',
+  // Storing information about shift, alt and ctrl keys being down.
+  keyShiftDown:    false,
+  keyAltDown:      false,
+  keyCtrlDown:     false,
+  // We need numbers of line to be visible till the bottom of the container - even if there are actually less lines.
+  // Therefore below number is added to get that done.
+  lineNumberAddon: 100,
 
-    var l = $(el_textarea).position().left, t = $(el_textarea).position().top;
-    var w = $(el_textarea).width(), h = $(el_textarea).height();
-
-    var el_container = document.createElement('div');
-    el_container.className = 'laatu-js-editor';
-    el_container.style.position = 'absolute';
-    el_container.style.left = l + 'px';
-    el_container.style.top = t + 'px';
-    el_container.id = id + '_laatu-js-editor-container';
-    document.body.appendChild(el_container);    
-
-    var el_line_numbers = document.createElement('div');
-    el_line_numbers.className = 'laatu-js-editor-line-numbers';
-    el_line_numbers.id = id + '_laatu-js-editor-line-numbers';
-    el_container.appendChild(el_line_numbers);
-    var el_line_numbers_w = $(el_line_numbers).width();
-
-    var el_lines = document.createElement('div');
-    el_lines.className = 'laatu-js-editor-lines';
-    el_lines.id = id + '_laatu-js-editor-lines';
-    var match = el_textarea.value.match(/\n/g);
+  _createContainer: function(id, l, t) {
+    var container_obj = _h.newObj('div', {
+      className: 'laatu-js-editor',
+      style: {
+        position: 'absolute',
+        left: l + 'px',
+        top: t + 'px'
+      },
+      id: id + '_laatu-js-editor-container'
+    });
+    _h.appendObj(container_obj, document.body);
+    return container_obj;    
+  },
+  _createLineNumbers: function(id, container_obj) {
+    var line_numbers_obj = _h.newObj('div', {
+      className: 'laatu-js-editor-line-numbers',
+      id: id + '_laatu-js-editor-line-numbers'
+    });
+    _h.appendObj(line_numbers_obj, container_obj);
+    return line_numbers_obj;
+  },
+  _createLines: function(id, textarea_obj, container_obj, line_numbers_obj) {
+    var lines_obj = _h.newObj('div', {
+      className: 'laatu-js-editor-lines',
+      id: id + '_laatu-js-editor-lines'
+    });
+    var match = textarea_obj.value.match(/\n/g);
     if (match !== null) {
       var cnt_lines = match.length + 1;
     } else {
       var cnt_lines = 1;
     }
-    var arr_lines = el_textarea.value.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ").split(/\n/);
+    var arr_lines = textarea_obj.value.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ").split(/\n/);
     var line_numbers = '';
     var lines_content = '';
     for (var i=0; i<cnt_lines+this.lineNumberAddon; i++) {
@@ -60,13 +105,32 @@ var laatuJsEditor = {
       }
       lines_content = lines_content + '<pre>' + arr_lines[i].encodeHtml() + '</pre>';
     }
-    el_lines.innerHTML = lines_content;
-    el_line_numbers.innerHTML = '<pre>' + line_numbers + '</pre>';
-    el_container.appendChild(el_lines);
+    lines_obj.innerHTML = lines_content;
+    line_numbers_obj.innerHTML = '<pre>' + line_numbers + '</pre>';
+    _h.appendObj(lines_obj, container_obj);
 
-    el_line_numbers.style.height = h+'px';
-    el_lines.style.height = h+'px';
-    el_lines.style.width = (w-el_line_numbers_w)+'px';
+    var line_numbers_coords = _h.coords(line_numbers_obj);
+    var textarea_coords = _h.coords(textarea_obj);
+    line_numbers_obj.style.height = textarea_coords.h+'px';
+    lines_obj.style.height = textarea_coords.h+'px';
+    lines_obj.style.width = (textarea_coords.w-line_numbers_coords.w)+'px';
+    return lines_obj;
+  },
+
+  init: function(id) {
+    if (!_h.obj(id, 'Element with id ' + id + ' not found.'))
+      return false;
+    
+    this.currentId = id;
+
+    var textarea_obj = _h.obj(id);
+
+    var textarea_coords = _h.coords(textarea_obj);
+    var container_obj = this._createContainer(id, textarea_coords.l, textarea_coords.t);
+
+    var line_numbers_obj = this._createLineNumbers(id, container_obj);
+
+    var lines_obj = this._createLines(id, textarea_obj, container_obj, line_numbers_obj);
 
     this.createChar(id);
     this.createCursor(id);

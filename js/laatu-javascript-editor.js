@@ -187,7 +187,7 @@ var laatuJsEditor = {
 
       switch (evt.keyCode) {
         case 37: laatuJsEditor.moveCursorLeft();     break;
-        case 39: laatuJsEditor.moveCursorRight();    break;
+        case 39: laatuJsEditor.moveCursorRight(1);    break;
         case 38: laatuJsEditor.moveCursorUp();       break;
         case 40: laatuJsEditor.moveCursorDown();     break;
         case 8:  laatuJsEditor.removeCharLeft();     break;
@@ -200,7 +200,7 @@ var laatuJsEditor = {
       var id = this.id.split('_')[0];
       var val = this.value;
       if (val != '') { 
-        laatuJsEditor.insertChar(val, id);
+        laatuJsEditor.insertText(val, id);
       }
       this.value = '';
     }
@@ -257,20 +257,27 @@ var laatuJsEditor = {
     if (typeof(id) != 'string') {
       var id = laatuJsEditor.currentId;
     }
+
     return {
       c: _h.obj(id+'_laatu-js-editor-cursor').col,
       r: _h.obj(id+'_laatu-js-editor-cursor').row
     };
   },
 
-  getScroll: function() {
-    var id = laatuJsEditor.currentId;
+  getScroll: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     return { l:el_lines.scrollLeft, t:el_lines.scrollTop };
   },
 
-  getLineColsCount: function(row) {
-    var id = laatuJsEditor.currentId;
+  getLineColsCount: function(row, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     for (var i=0; i<el_lines.childNodes.length; i++) {
       if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
@@ -282,8 +289,11 @@ var laatuJsEditor = {
     }
     return null;
   },
-  getLine: function(row) {
-    var id = laatuJsEditor.currentId;
+  getLine: function(row, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     for (var i=0; i<el_lines.childNodes.length; i++) {
       if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
@@ -295,13 +305,19 @@ var laatuJsEditor = {
     }
     return null;
   },
-  getRowsCount: function(row) {
-    var id = laatuJsEditor.currentId;
+  getRowsCount: function(row, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+ 
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     return el_lines.childNodes.length;
   },
-  replaceLine: function(row, content) {
-    var id = laatuJsEditor.currentId;
+  replaceLine: function(row, content, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     for (var i=0; i<el_lines.childNodes.length; i++) {
       if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
@@ -314,8 +330,11 @@ var laatuJsEditor = {
       }
     }
   },
-  insertLineAfter: function(row, content) {
-    var id = laatuJsEditor.currentId;
+  insertLineAfter: function(row, content, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     var lines_cnt = el_lines.childNodes.length;
     for (var i=0; i<lines_cnt; i++) {
@@ -335,8 +354,11 @@ var laatuJsEditor = {
       }
     }
   },
-  removeLine: function(row) {
-    var id = laatuJsEditor.currentId;
+  removeLine: function(row, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+ 
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     var lines_cnt = el_lines.childNodes.length;
     for (var i=0; i<lines_cnt; i++) {
@@ -348,114 +370,190 @@ var laatuJsEditor = {
       }
     }
   },
-  addLineNumber: function() {
-    var id = laatuJsEditor.currentId;
+  addLineNumber: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     var lines_cnt = el_lines.childNodes.length + this.lineNumberAddon;
     var el_line_numbers = document.getElementById(id+'_laatu-js-editor-line-numbers');
     el_line_numbers.innerHTML = el_line_numbers.innerHTML.replace('</pre>', "\n" + lines_cnt + '</pre>');
   },
-  removeLineNumber: function() {
-    var id = laatuJsEditor.currentId;
+  removeLineNumber: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
     var el_line_numbers = document.getElementById(id+'_laatu-js-editor-line-numbers');
     el_line_numbers.innerHTML = el_line_numbers.innerHTML.replace(/\n[0-9]+\<\/pre\>/, '</pre>');
   },
-  moveCursorLeft: function() {
-    var pos = this.getCursorPosition();
+  moveCursorLeft: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+   var pos = this.getCursorPosition(id);
     if (pos.c > 0) {
       this.setCursorPosition(pos.r, pos.c-1);
     }
   },
-  moveCursorRight: function(c) {
+  moveCursorRight: function(c, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
     if (typeof(c) != 'number') {
       var c = 1;
     }
-    var pos = this.getCursorPosition();
-    var line_cols = this.getLineColsCount(pos.r);
+    var pos = this.getCursorPosition(id);
+    var line_cols = this.getLineColsCount(pos.r, id);
     if (pos.c < line_cols) {
-      this.setCursorPosition(pos.r, pos.c+c);
+      this.setCursorPosition(pos.r, pos.c+c, id);
     }
   },
-  moveCursorUp: function() {
-    var pos = this.getCursorPosition();
+  moveCursorUp: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+    var pos = this.getCursorPosition(id);
     if (pos.r > 0) {
-      var prev_line_cols = this.getLineColsCount(pos.r - 1);
+      var prev_line_cols = this.getLineColsCount(pos.r - 1, id);
       if (prev_line_cols < pos.c) {
         var col = prev_line_cols;
       } else {
         var col = pos.c;
       }
-      this.setCursorPosition(pos.r - 1, col);
+      this.setCursorPosition(pos.r - 1, col, id);
     }
   },
-  moveCursorDown: function() {
-    var pos = this.getCursorPosition();
-    var rows = this.getRowsCount();
+  moveCursorDown: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+    var pos = this.getCursorPosition(id);
+    var rows = this.getRowsCount(id);
     if (pos.r < (rows-1)) {
-      var next_line_cols = this.getLineColsCount(pos.r + 1);
+      var next_line_cols = this.getLineColsCount(pos.r + 1, id);
       if (next_line_cols < pos.c) {
         var col = next_line_cols;
       } else {
         var col = pos.c;
       }
-      this.setCursorPosition(pos.r + 1, col);
+      this.setCursorPosition(pos.r + 1, col, id);
     }
+  },
+  insertText: function(t, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+    var match = t.match(/\n/g);
+    if (match !== null) {
+      var cnt_lines = match.length + 1;
+    } else {
+      var cnt_lines = 1;
+    }
+    if (cnt_lines == 1) {
+      return this.insertChar(t, id);
+    }
+
+    var arr_lines = t.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ").split(/\n/);
+
+    var pos = this.getCursorPosition(id);
+    var line = this.getLine(pos.r, id);
+    var left = line.substring(0, pos.c);
+    var right = line.substring(pos.c);
+    this.replaceLine(pos.r, left + arr_lines[0], id);
+    this.moveCursorRight(arr_lines[0].length, id);
+
+    for (var i=1; i<cnt_lines; i++) {
+      if (i == cnt_lines-1) {
+        this.insertLineAfter(pos.r+i-1, arr_lines[i]+right, id);
+      } else {
+        this.insertLineAfter(pos.r+i-1, arr_lines[i], id);
+      }
+    }
+    this.setCursorPosition(pos.r+cnt_lines-1, arr_lines[cnt_lines-1].length, id);
   },
   insertChar: function(c, id) {
     if (typeof(id) != 'string') {
       var id = laatuJsEditor.currentId;
     }
-    var pos = this.getCursorPosition();
-    var line = this.getLine(pos.r);
+
+    var pos = this.getCursorPosition(id);
+    var line = this.getLine(pos.r, id);
     var left = line.substring(0, pos.c);
     var right = line.substring(pos.c);
-    this.replaceLine(pos.r, left + c + right);
-    this.moveCursorRight(c.length);
+    this.replaceLine(pos.r, left + c + right, id);
+    this.moveCursorRight(c.length, id);
   },
-  removeChar: function(col) {
-    var pos = this.getCursorPosition();
-    var line = this.getLine(pos.r);
+  removeChar: function(col, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+    var pos = this.getCursorPosition(id);
+    var line = this.getLine(pos.r, id);
     var left = line.substring(0, col);
     var right = line.substring(col + 1);
-    this.replaceLine(pos.r, left + right);
+    this.replaceLine(pos.r, left + right, id);
   },
-  removeCharLeft: function() {
-    var pos = this.getCursorPosition();
+  removeCharLeft: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+    var pos = this.getCursorPosition(id);
     if (pos.c > 0) {
-      this.removeChar(pos.c - 1);
-      this.moveCursorLeft();
+      this.removeChar(pos.c - 1, id);
+      this.moveCursorLeft(id);
     } else if (pos.c == 0 && pos.r > 0) {
-      this.joinLineAbove();
+      this.joinLineAbove(id);
     }
   },
-  removeCharRight: function() {
-    var pos = this.getCursorPosition();
-    var line_cols = this.getLineColsCount(pos.r);
+  removeCharRight: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+    var pos = this.getCursorPosition(id);
+    var line_cols = this.getLineColsCount(pos.r, id);
     if (pos.c < line_cols) {
-      this.removeChar(pos.c);
+      this.removeChar(pos.c, id);
     }
   },
-  breakLine: function() {
-    var pos = this.getCursorPosition();
-    var line = this.getLine(pos.r);
+  breakLine: function(id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+    var pos = this.getCursorPosition(id);
+    var line = this.getLine(pos.r, id);
     var left = line.substring(0, pos.c);
     var right = line.substring(pos.c);
-    this.replaceLine(pos.r, left);
-    this.insertLineAfter(pos.r, right);
-    this.setCursorPosition(pos.r+1, 0);
-    this.addLineNumber();
+    this.replaceLine(pos.r, left, id);
+    this.insertLineAfter(pos.r, right, id);
+    this.setCursorPosition(pos.r+1, 0, id);
+    this.addLineNumber(id);
   },
-  joinLineAbove: function(row) {
-    var pos = this.getCursorPosition();
-    var line = this.getLine(pos.r);
+  joinLineAbove: function(row, id) {
+    if (typeof(id) != 'string') {
+      var id = laatuJsEditor.currentId;
+    }
+
+    var pos = this.getCursorPosition(id);
+    var line = this.getLine(pos.r, id);
     var left = line.substring(0, pos.c);
     var right = line.substring(pos.c);
-    var line_contents = this.getLine(pos.r - 1);
+    var line_contents = this.getLine(pos.r - 1, id);
     var new_contents = line_contents+right;
-    this.replaceLine(pos.r-1, new_contents);
-    this.setCursorPosition(pos.r-1, line_contents.length);
-    this.removeLine(pos.r);
-    this.removeLineNumber();
+    this.replaceLine(pos.r-1, new_contents, id);
+    this.setCursorPosition(pos.r-1, line_contents.length, id);
+    this.removeLine(pos.r, id);
+    this.removeLineNumber(id);
   }
 };
 

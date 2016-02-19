@@ -232,41 +232,44 @@ var laatuJsEditor = {
     if (typeof(id) != 'string') {
       var id = laatuJsEditor.currentId;
     }
-    var l1 = $('#'+id+'_laatu-js-editor-container').position().left;
-    var t1 = $('#'+id+'_laatu-js-editor-container').position().top;
-    var l2 = $('#'+id+'_laatu-js-editor-lines').position().left;
-    var t2 = $('#'+id+'_laatu-js-editor-lines').position().top;
-    var scroll = this.getScroll();
-    var el_cursor = document.getElementById(id+'_laatu-js-editor-cursor');
-    var el_char = document.getElementById(id+'_laatu-js-editor-char');
-    var char_w = $(el_char).width(), char_h = $(el_char).height();
-    el_cursor.style.zIndex=2000;
-    el_cursor.style.position='absolute';
-    el_cursor.style.left=(l1+l2+(col*char_w)-scroll.l)+'px';
-    el_cursor.style.top=(t1+t2+(row*char_h)-scroll.t)+'px';
-    el_cursor.col = col;
-    el_cursor.row = row;
-    document.getElementById(id+'_laatu-js-editor-cursor-input').focus();
+    var container_coords = _h.coords(_h.obj(id+'_laatu-js-editor-container'));
+    var lines_coords     = _h.coords(_h.obj(id+'_laatu-js-editor-lines'));
+    var char_coords      = _h.coords(_h.obj(id+'_laatu-js-editor-char'));
+    var scroll           = this.getScroll();
+
+    var cursor_obj       = _h.obj(id+'_laatu-js-editor-cursor');
+    
+    cursor_obj.style.zIndex   = 2000;
+    cursor_obj.style.position = 'absolute';
+    cursor_obj.style.left     = (container_coords.l+lines_coords.l+(col*char_coords.w)-scroll.l)+'px';
+    cursor_obj.style.top      = (container_coords.t+lines_coords.t+(row*char_coords.h)-scroll.t)+'px';
+
+    cursor_obj.col = col;
+    cursor_obj.row = row;
+
+    _h.obj(id+'_laatu-js-editor-cursor-input').focus();
   },
   refreshCursorPosition: function(id) {
-    var el_cursor = document.getElementById(id+'_laatu-js-editor-cursor');
-    this.setCursorPosition(el_cursor.row, el_cursor.col, id);
+    var cursor_obj = _h.obj(id+'_laatu-js-editor-cursor');
+    this.setCursorPosition(cursor_obj.row, cursor_obj.col, id);
   },
   getCursorPosition: function(id) {
     if (typeof(id) != 'string') {
       var id = laatuJsEditor.currentId;
     }
-    var el_cursor = document.getElementById(id+'_laatu-js-editor-cursor');
-    var col = el_cursor.col;
-    var row = el_cursor.row;
-    return { c:col, r:row };
+    return {
+      c: _h.obj(id+'_laatu-js-editor-cursor').col,
+      r: _h.obj(id+'_laatu-js-editor-cursor').row
+    };
   },
+
   getScroll: function() {
     var id = laatuJsEditor.currentId;
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     return { l:el_lines.scrollLeft, t:el_lines.scrollTop };
   },
- getLineColsCount: function(row) {
+
+  getLineColsCount: function(row) {
     var id = laatuJsEditor.currentId;
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     for (var i=0; i<el_lines.childNodes.length; i++) {

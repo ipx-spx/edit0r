@@ -160,6 +160,51 @@ var laatuJsEditor = {
       _h.obj(id+'_laatu-js-editor-line-numbers').scrollTop = this.scrollTop;
     }
   },
+  _attachKeys: function(id) {
+    document.body.onkeydown = function(evt) {
+      switch (evt.keyCode) {
+        case 16: laatuJsEditor.keyShiftDown = true;  break;
+        case 18: laatuJsEditor.keyAltDown = true;    break;
+        case 17: laatuJsEditor.keyCtrlDown = true;   break;
+        default: break;
+      }
+    }
+    document.body.onkeyup = function(evt) {
+       switch (evt.keyCode) {
+        case 16: laatuJsEditor.keyShiftDown = false; break;
+        case 18: laatuJsEditor.keyAltDown = false;   break;
+        case 17: laatuJsEditor.keyCtrlDown = false;  break;
+        default: break;
+      }
+    }
+    document.body.onkeypress = function(evt) {
+      if (laatuJsEditor.keyAltDown || laatuJsEditor.keyCtrlDown)
+        return null;
+
+      if (evt.keyCode==37 || evt.keyCode==39 || evt.keyCode==38 || evt.keyCode==40 || evt.keyCode==8 || evt.keyCode==46 || evt.keyCode==13) {
+        evt.preventDefault();
+      }
+
+      switch (evt.keyCode) {
+        case 37: laatuJsEditor.moveCursorLeft();     break;
+        case 39: laatuJsEditor.moveCursorRight();    break;
+        case 38: laatuJsEditor.moveCursorUp();       break;
+        case 40: laatuJsEditor.moveCursorDown();     break;
+        case 8:  laatuJsEditor.removeCharLeft();     break;
+        case 46: laatuJsEditor.removeCharRight();    break;
+        case 13: laatuJsEditor.breakLine();          break;
+        default: break;
+      }
+    }
+    _h.obj(id+'_laatu-js-editor-cursor-input').onkeyup = function(evt) {
+      var id = this.id.split('_')[0];
+      var val = this.value;
+      if (val != '') { 
+        laatuJsEditor.insertChar(val, id);
+      }
+      this.value = '';
+    }
+  },
  
   init: function(id) {
     if (!_h.obj(id, 'Element with id ' + id + ' not found.'))
@@ -175,12 +220,12 @@ var laatuJsEditor = {
     var char_obj = this._createChar(id);
     this._createCursor(id, char_obj);
 
-    this.setCursorPosition(0,0);
-    this.attachKeys(id);
+    this._attachKeys(id);
     this._attachClick(id);
     this._attachScroll(id);
-
     this._attachResize(id);
+
+    this.setCursorPosition(0,0);
   },
 
   setCursorPosition: function(row, col, id) {
@@ -221,67 +266,7 @@ var laatuJsEditor = {
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     return { l:el_lines.scrollLeft, t:el_lines.scrollTop };
   },
-  attachKeys: function(id) {
-    document.body.onkeydown = function(evt) {
-      switch (evt.keyCode) {
-        case 16:
-          laatuJsEditor.keyShiftDown = true;
-          break;
-        case 18:
-          laatuJsEditor.keyAltDown = true;
-          break;
-        case 17:
-          laatuJsEditor.keyCtrlDown = true;
-          break;
-        default:
-          break;
-      }
-    }
-    document.body.onkeyup = function(evt) {
-       switch (evt.keyCode) {
-        case 16:
-          laatuJsEditor.keyShiftDown = false;
-          break;
-        case 18:
-          laatuJsEditor.keyAltDown = false;
-          break;
-        case 17:
-          laatuJsEditor.keyCtrlDown = false;
-          break;
-        default:
-          break;
-      }
-    }
-    document.body.onkeypress = function(evt) {
-      if (laatuJsEditor.keyAltDown || laatuJsEditor.keyCtrlDown)
-        return null;
-
-      if (evt.keyCode==37 || evt.keyCode==39 || evt.keyCode==38 || evt.keyCode==40 || evt.keyCode==8 || evt.keyCode==46 || evt.keyCode==13) {
-        evt.preventDefault();
-      }
-
-      switch (evt.keyCode) {
-        case 37: laatuJsEditor.moveCursorLeft(); break;
-        case 39: laatuJsEditor.moveCursorRight(); break;
-        case 38: laatuJsEditor.moveCursorUp(); break;
-        case 40: laatuJsEditor.moveCursorDown(); break;
-        case 8:  laatuJsEditor.removeCharLeft(); break;
-        case 46: laatuJsEditor.removeCharRight(); break;
-        case 13: laatuJsEditor.breakLine(); break;
-        default: 
-          break;
-      }
-    }
-    document.getElementById(id+'_laatu-js-editor-cursor-input').onkeyup = function(evt) {
-      var id = this.id.split('_')[0];
-      var val = this.value;
-      if (val != '') { 
-        laatuJsEditor.insertChar(val, id);
-      }
-      this.value = '';
-    }
-  },
-  getLineColsCount: function(row) {
+ getLineColsCount: function(row) {
     var id = laatuJsEditor.currentId;
     var el_lines = document.getElementById(id+'_laatu-js-editor-lines');
     for (var i=0; i<el_lines.childNodes.length; i++) {

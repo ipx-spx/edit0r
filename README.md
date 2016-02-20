@@ -5,6 +5,10 @@ nice looking (soon) editor.
 It is not totally functional and it has many bugs. Also, when it gets into some sort of working stable status, it will require
 re-factoring.
 
+## Requirements
+Requires June library at least in version 0.2. It can be found at the following URL: https://github.com/LaatuGroup/june.
+It is a submodule linked to vendor/laatu/june.
+
 ## Running
 Please download all the files and run test.html. There is an *init()* method called on *laatuJsEditor* object that initialises
 the editor.

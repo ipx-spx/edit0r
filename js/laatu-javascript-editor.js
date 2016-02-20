@@ -7,48 +7,6 @@ String.prototype.decodeHtml = function() {
   return String(this).replace(/\&lt\;/g, '<').replace(/\&gt\;/g, '>');
 }
 
-// Little helper.
-var _h = {
-  obj: function(id, errMsg) {
-    var o = document.getElementById(id);
-    if (o === null) {
-      console.log(errMsg);
-    }
-    return o;
-  },
-  coords: function(obj) {
-    if (typeof(obj) == 'string') {
-      var obj = this.__obj(obj);
-    }
-    // @todo Can vanilla javascript be used here instead of jQuery?
-    return {
-      w: $(obj).width(),
-      h: $(obj).height(),
-      l: $(obj).position().left,
-      t: $(obj).position().top
-    };
-  },
-  // To be used only in sensible places, eg. when object is created once for a lifetime.
-  newObj: function(type, properties) {
-    var o = document.createElement(type);
-    if (typeof(properties) == 'object') {
-      for (p in properties) {
-        if (typeof(properties[p]) == 'object') {
-          for (p2 in properties[p]) {
-            o[p][p2] = properties[p][p2];
-          }
-        } else {
-          o[p] = properties[p];
-        }
-      }
-    }
-    return o;
-  },
-  appendObj: function(obj, tgt) {
-    tgt.appendChild(obj);
-  }
-}
-
 var laatuJsEditor = {
   // There might be many instance of laatuJsEditor but only one of them can be active (at least so far).
   // Possible @todo is to make this an array so that text might be input in many windows.
@@ -62,7 +20,7 @@ var laatuJsEditor = {
   lineNumberAddon: 100,
 
   _createContainer: function(id, l, t) {
-    var container_obj = _h.newObj('div', {
+    var container_obj = june.newObj('div', {
       className: 'laatu-js-editor',
       style: {
         position: 'absolute',
@@ -71,19 +29,19 @@ var laatuJsEditor = {
       },
       id: id + '_laatu-js-editor-container'
     });
-    _h.appendObj(container_obj, document.body);
+    june.appendObj(container_obj, document.body);
     return container_obj;    
   },
   _createLineNumbers: function(id, container_obj) {
-    var line_numbers_obj = _h.newObj('div', {
+    var line_numbers_obj = june.newObj('div', {
       className: 'laatu-js-editor-line-numbers',
       id: id + '_laatu-js-editor-line-numbers'
     });
-    _h.appendObj(line_numbers_obj, container_obj);
+    june.appendObj(line_numbers_obj, container_obj);
     return line_numbers_obj;
   },
   _createLines: function(id, textarea_obj, container_obj, line_numbers_obj) {
-    var lines_obj = _h.newObj('div', {
+    var lines_obj = june.newObj('div', {
       className: 'laatu-js-editor-lines',
       id: id + '_laatu-js-editor-lines'
     });
@@ -107,57 +65,57 @@ var laatuJsEditor = {
     }
     lines_obj.innerHTML = lines_content;
     line_numbers_obj.innerHTML = '<pre>' + line_numbers + '</pre>';
-    _h.appendObj(lines_obj, container_obj);
+    june.appendObj(lines_obj, container_obj);
 
-    var line_numbers_coords = _h.coords(line_numbers_obj);
-    var textarea_coords = _h.coords(textarea_obj);
+    var line_numbers_coords = june.coords(line_numbers_obj);
+    var textarea_coords = june.coords(textarea_obj);
     line_numbers_obj.style.height = textarea_coords.h+'px';
     lines_obj.style.height = textarea_coords.h+'px';
     lines_obj.style.width = (textarea_coords.w-line_numbers_coords.w)+'px';
     return lines_obj;
   },
   _createChar: function(id) {
-    var char_obj = _h.newObj('span', {
+    var char_obj = june.newObj('span', {
       className: 'laatu-js-editor-char',
       id: id + '_laatu-js-editor-char',
       innerHTML: '&nbsp;'
     });
-    _h.appendObj(char_obj, document.body);
+    june.appendObj(char_obj, document.body);
     return char_obj;
   },
   _createCursor: function(id, char_obj) {
-    var char_coords = _h.coords(char_obj);
-    var cursor_obj = _h.newObj('div', {
+    var char_coords = june.coords(char_obj);
+    var cursor_obj = june.newObj('div', {
       className: 'laatu-js-editor-cursor',
       id: id + '_laatu-js-editor-cursor',
       innerHTML: '<textarea rows="1" id="'+id+'_laatu-js-editor-cursor-input"></textarea>',
       style: { height: char_coords.h+'px' }
     });
-    _h.appendObj(cursor_obj, document.body);
+    june.appendObj(cursor_obj, document.body);
   },
   _attachResize: function(id) {
-    _h.obj(id).onresize = function() {
+    june.obj(id).onresize = function() {
       var textarea_obj = this;
-      var textarea_coords = _h.coords(textarea_obj);
-      var line_numbers_obj = _h.obj(id+'_laatu-js-editor-line-numbers');
-      var line_numbers_coords = _h.coords(line_numbers_obj);
-      var lines_obj = _h.obj(id+'_laatu-js-editor-lines');
+      var textarea_coords = june.coords(textarea_obj);
+      var line_numbers_obj = june.obj(id+'_laatu-js-editor-line-numbers');
+      var line_numbers_coords = june.coords(line_numbers_obj);
+      var lines_obj = june.obj(id+'_laatu-js-editor-lines');
       line_numbers_obj.style.height = textarea_coords.h+'px';
       lines_obj.style.height = textarea_coords.h+'px';
       lines_obj.style.width = (textarea_coords.w-line_numbers_coords.w)+'px';
     }
   },
   _attachClick: function(id) {
-    _h.obj(id+'_laatu-js-editor-lines').onclick = function() {
+    june.obj(id+'_laatu-js-editor-lines').onclick = function() {
       var id = this.id.split('_')[0];
-      _h.obj(id+'_laatu-js-editor-cursor-input').focus();
+      june.obj(id+'_laatu-js-editor-cursor-input').focus();
     }
   },
   _attachScroll: function(id) {
-    _h.obj(id+'_laatu-js-editor-lines').onscroll = function() {
+    june.obj(id+'_laatu-js-editor-lines').onscroll = function() {
       var id = this.id.replace('_laatu-js-editor-lines', '');
       laatuJsEditor.refreshCursorPosition(id);
-      _h.obj(id+'_laatu-js-editor-line-numbers').scrollTop = this.scrollTop;
+      june.obj(id+'_laatu-js-editor-line-numbers').scrollTop = this.scrollTop;
     }
   },
   _attachKeys: function(id) {
@@ -196,7 +154,7 @@ var laatuJsEditor = {
         default: break;
       }
     }
-    _h.obj(id+'_laatu-js-editor-cursor-input').onkeyup = function(evt) {
+    june.obj(id+'_laatu-js-editor-cursor-input').onkeyup = function(evt) {
       var id = this.id.split('_')[0];
       var val = this.value;
       if (val != '') { 
@@ -207,13 +165,13 @@ var laatuJsEditor = {
   },
  
   init: function(id) {
-    if (!_h.obj(id, 'Element with id ' + id + ' not found.'))
+    if (!june.obj(id, 'Element with id ' + id + ' not found.'))
       return false;
     
     this.currentId = id;
-    var textarea_obj = _h.obj(id);
+    var textarea_obj = june.obj(id);
 
-    var textarea_coords = _h.coords(textarea_obj);
+    var textarea_coords = june.coords(textarea_obj);
     var container_obj = this._createContainer(id, textarea_coords.l, textarea_coords.t);
     var line_numbers_obj = this._createLineNumbers(id, container_obj);
     this._createLines(id, textarea_obj, container_obj, line_numbers_obj);
@@ -232,12 +190,12 @@ var laatuJsEditor = {
     if (typeof(id) != 'string') {
       var id = laatuJsEditor.currentId;
     }
-    var container_coords = _h.coords(_h.obj(id+'_laatu-js-editor-container'));
-    var lines_coords     = _h.coords(_h.obj(id+'_laatu-js-editor-lines'));
-    var char_coords      = _h.coords(_h.obj(id+'_laatu-js-editor-char'));
+    var container_coords = june.coords(june.obj(id+'_laatu-js-editor-container'));
+    var lines_coords     = june.coords(june.obj(id+'_laatu-js-editor-lines'));
+    var char_coords      = june.coords(june.obj(id+'_laatu-js-editor-char'));
     var scroll           = this.getScroll();
 
-    var cursor_obj       = _h.obj(id+'_laatu-js-editor-cursor');
+    var cursor_obj       = june.obj(id+'_laatu-js-editor-cursor');
     
     cursor_obj.style.zIndex   = 2000;
     cursor_obj.style.position = 'absolute';
@@ -247,10 +205,10 @@ var laatuJsEditor = {
     cursor_obj.col = col;
     cursor_obj.row = row;
 
-    _h.obj(id+'_laatu-js-editor-cursor-input').focus();
+    june.obj(id+'_laatu-js-editor-cursor-input').focus();
   },
   refreshCursorPosition: function(id) {
-    var cursor_obj = _h.obj(id+'_laatu-js-editor-cursor');
+    var cursor_obj = june.obj(id+'_laatu-js-editor-cursor');
     this.setCursorPosition(cursor_obj.row, cursor_obj.col, id);
   },
   getCursorPosition: function(id) {
@@ -259,8 +217,8 @@ var laatuJsEditor = {
     }
 
     return {
-      c: _h.obj(id+'_laatu-js-editor-cursor').col,
-      r: _h.obj(id+'_laatu-js-editor-cursor').row
+      c: june.obj(id+'_laatu-js-editor-cursor').col,
+      r: june.obj(id+'_laatu-js-editor-cursor').row
     };
   },
 

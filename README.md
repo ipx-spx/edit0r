@@ -21,6 +21,8 @@ Features to be implemented:
 * api for things like validation, syntax highlighting, importing and exporting.
 
 ### Known bugs so far
+JUNE needs updating!
+
 This list should probably be much longer:
 * when line gets empty, a space is getting inserted so that *pre* tag does not dissapear;
 * cursor should not get out of the box (both up and down);

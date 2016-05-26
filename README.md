@@ -6,8 +6,9 @@ It is not totally functional and it has many bugs. Also, when it gets into some 
 re-factoring.
 
 ## Requirements
-Requires June library at least in version 0.2. It can be found at the following URL: https://github.com/LaatuGroup/june.
-It is a submodule linked to vendor/laatu/june.
+~~Requires June library at least in version 0.2. It can be found at the following URL: https://github.com/LaatuGroup/june.
+It is a submodule linked to vendor/laatu/june.~~
+This section needs updating.
 
 ## Running
 Please download all the files and run test.html. There is an *init()* method called on *laatuJsEditor* object that initialises

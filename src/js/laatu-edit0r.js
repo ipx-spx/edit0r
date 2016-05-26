@@ -128,15 +128,15 @@ var edit0r = (function() {
         june.g(document.body).on('keydown', function(evt) {
             switch (evt.keyCode) {
                 case 16: keyShiftDown = true;  break;
-                case 18: keyAltDown   = true;    break;
-                case 17: keyCtrlDown  = true;   break;
+                case 18: keyAltDown   = true;  break;
+                case 17: keyCtrlDown  = true;  break;
                 default: break;
             }
         }).on('keyup', function(evt) {
             switch (evt.keyCode) {
                 case 16: keyShiftDown = false; break;
-                case 18: keyAltDown   = false;   break;
-                case 17: keyCtrlDown  = false;  break;
+                case 18: keyAltDown   = false; break;
+                case 17: keyCtrlDown  = false; break;
                 default: break;
             }
         }).on('keypress', function(evt) {
@@ -150,7 +150,7 @@ var edit0r = (function() {
             // @scope?
             switch (evt.keyCode) {
                 case 37: moveCursorLeft();     break;
-                case 39: moveCursorRight(1);    break;
+                case 39: moveCursorRight(1);   break;
                 case 38: moveCursorUp();       break;
                 case 40: moveCursorDown();     break;
                 case 8:  removeCharLeft();     break;
@@ -564,7 +564,4 @@ var edit0r = (function() {
         joinLineAbove        : joinLineAbove
     };
 })();
-
-var laatuJsEditor = {
-};
 

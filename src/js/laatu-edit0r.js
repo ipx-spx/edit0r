@@ -193,7 +193,7 @@ var edit0r = (function() {
 
     function setCursorPosition(row, col, id) {
         if (typeof(id) != 'string') {
-            var id = laatuJsEditor.currentId;
+            var id = currentId;
         }
         var container_coords = june.g(june.obj(id+'_laatu-js-editor-container')).pos();
         var lines_coords     = june.g(june.obj(id+'_laatu-js-editor-lines')).pos();
@@ -247,7 +247,7 @@ var edit0r = (function() {
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    return el_lines.childNodes[i].innerHTML.decodeHtml().length;
+                    return june.dec(el_lines.childNodes[i].innerHTML).length;
                 }
             }
         }
@@ -263,7 +263,7 @@ var edit0r = (function() {
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    return el_lines.childNodes[i].innerHTML.decodeHtml();
+                    return june.dec(el_lines.childNodes[i].innerHTML);
                 }
             }
         }
@@ -291,7 +291,7 @@ var edit0r = (function() {
                     if (content == '') {
                         content = ' ';
                     }
-                    el_lines.childNodes[i].innerHTML = content.encodeHtml();
+                    el_lines.childNodes[i].innerHTML = june.enc(content);
                 }
             }
         }
@@ -311,7 +311,7 @@ var edit0r = (function() {
                         content = ' ';
                     }
                     var new_line = june.nu('pre');
-                    new_line.innerHTML = content.encodeHtml();
+                    new_line.innerHTML = june.enc(content);
                     if (i == lines_cnt) {
                         el_lines.appendChild(new_line);
                     } else {

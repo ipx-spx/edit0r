@@ -52,7 +52,7 @@ var edit0r = (function() {
         var arr_lines     = textarea_obj.value.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ").split(/\n/);
         var line_numbers  = '';
         var lines_content = '';
-        for (var i=0; i<cnt_lines+this.lineNumberAddon; i++) {
+        for (var i=0; i<cnt_lines+lineNumberAddon; i++) {
             line_numbers = line_numbers + (line_numbers!=''?"\n":'') + (i+1);
         }
         for (var i=0; i<cnt_lines; i++) {
@@ -345,7 +345,7 @@ var edit0r = (function() {
         }
 
         var el_lines        = june.obj(id+'_laatu-js-editor-lines');
-        var lines_cnt       = el_lines.childNodes.length + this.lineNumberAddon;
+        var lines_cnt       = el_lines.childNodes.length + lineNumberAddon;
         var el_line_numbers = june.obj(id+'_laatu-js-editor-line-numbers');
         el_line_numbers.innerHTML = el_line_numbers.innerHTML.replace('</pre>', "\n" + lines_cnt + '</pre>');
     };

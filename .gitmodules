@@ -1,4 +1,4 @@
 [submodule "vendor/laatu/june"]
 	path = vendor/laatu/june
 	url = https://github.com/laatugroup/june.git
-	branch = 44db58c106621bd7c42fe7a73a7228f1b7470301
+    branch = master

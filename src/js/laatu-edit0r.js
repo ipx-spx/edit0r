@@ -42,6 +42,9 @@ if there are actually less lines. Therefore below number is added to get that
 done. */
     var lineNumberAddon = 100;
 
+/* Edit mode. Text can be edited only when edit mode is turned on. */
+    var editMode        = false;
+
 /* Creates container element. */
     function _createContainer(id, l, t) {
         var c = june.nu('div', {
@@ -127,7 +130,7 @@ done. */
             innerHTML:   '<textarea '
                        + 'rows="1" '
                        + 'id="'+id+'_laatu-js-editor-cursor-input"'
-                       + '></textarea>',
+                       + 'disabled="disabled"></textarea>',
             style    : { height: char_coords.h+'px' }
         });
         june.g(document.body).app(cursor_obj);
@@ -194,6 +197,12 @@ done. */
             {
                 evt.preventDefault();
             }
+            if (!editMode) {
+                if (evt.charCode==105) {
+                    evt.preventDefault();
+                    turnEditModeOn();
+                }
+            }
 
             // @scope?
             switch (evt.keyCode) {
@@ -201,9 +210,9 @@ done. */
                 case 39: moveCursorRight(1);   break;
                 case 38: moveCursorUp();       break;
                 case 40: moveCursorDown();     break;
-                case 8:  removeCharLeft();     break;
-                case 46: removeCharRight();    break;
-                case 13: breakLine();          break;
+                case 8:  if (editMode) { removeCharLeft();  } break;
+                case 46: if (editMode) { removeCharRight(); } break;
+                case 13: if (editMode) { breakLine();       } break;
                 default: break;
             }
         });
@@ -620,6 +629,16 @@ done. */
         removeLineNumber(id);
     };
 
+/* Turns on edit mode. */
+    function turnEditModeOn(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+        editMode = true;
+        june.g(id+'_laatu-js-editor-cursor-input').attr('disabled', null);
+        june.obj(id+'_laatu-js-editor-cursor-input').focus();
+    };
+
 /* Public methods. */
     return {
         init                 : init,
@@ -645,7 +664,8 @@ done. */
         removeCharLeft       : removeCharLeft,
         removeCharRight      : removeCharRight,
         breakLine            : breakLine,
-        joinLineAbove        : joinLineAbove
+        joinLineAbove        : joinLineAbove,
+        turnEditModeOn       : turnEditModeOn
     };
 })();
 

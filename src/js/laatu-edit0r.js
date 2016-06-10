@@ -1,4 +1,6 @@
 /*
+Edit0r, by Nicholas Gasior
+
 Copyright (c) 2016, Laatu
 All rights reserved.
 

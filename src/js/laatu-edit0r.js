@@ -25,19 +25,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 var edit0r = (function() {
 
-    // There might be many instances of edit0r but only one of them can be active (at least so far).
-    // Possible @todo is to make this an array so that text might be input in many windows.
+/* There might be many instances of edit0r but only one of them can be active
+(at least so far). Possible @todo is to make this an array so that text might
+be input in many windows. */
     var currentId       = '';
 
-    // Storing information about shift, alt and ctrl keys being down.
+/* Storing information about shift, alt and ctrl keys being down. */
     var keyShiftDown    = false;
     var keyAltDown      = false;
     var keyCtrlDown     = false;
 
-    // We need numbers of line to be visible till the bottom of the container - even if there are actually less lines.
-    // Therefore below number is added to get that done.
+/* We need numbers of line to be visible till the bottom of the container, even
+if there are actually less lines. Therefore below number is added to get that
+done. */
     var lineNumberAddon = 100;
 
+/* Creates container element. */
     function _createContainer(id, l, t) {
         var c = june.nu('div', {
             className: 'laatu-js-editor',
@@ -52,6 +55,7 @@ var edit0r = (function() {
         return c;
     };
 
+/* Creates element containing line numbers. */
     function _createLineNumbers(id, c) {
         var l = june.nu('div', {
             className: 'laatu-js-editor-line-numbers',
@@ -61,6 +65,7 @@ var edit0r = (function() {
         return l;
     };
 
+/* Creates element for every single line. */
     function _createLines(id, textarea_obj, container_obj, line_numbers_obj) {
         var lines_obj = june.nu('div', {
             className: 'laatu-js-editor-lines',
@@ -72,7 +77,9 @@ var edit0r = (function() {
         } else {
             var cnt_lines = 1;
         }
-        var arr_lines     = textarea_obj.value.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ").split(/\n/);
+        var arr_lines     = textarea_obj.value.replace(/\n\n/g, "\n \n")
+                                              .replace(/\n$/g, "\n ")
+                                              .split(/\n/);
         var line_numbers  = '';
         var lines_content = '';
         for (var i=0; i<cnt_lines+lineNumberAddon; i++) {
@@ -82,7 +89,9 @@ var edit0r = (function() {
             if (arr_lines[i] == '') {
                 arr_lines[i] = ' ';
             }
-            lines_content = lines_content+'<pre>'+june.enc(arr_lines[i])+'</pre>';
+            lines_content = lines_content+'<pre>'
+                                         +june.enc(arr_lines[i])
+                                         +'</pre>';
         }
         lines_obj.innerHTML        = lines_content;
         line_numbers_obj.innerHTML = '<pre>'+line_numbers+'</pre>';
@@ -91,11 +100,12 @@ var edit0r = (function() {
         var line_numbers_coords = june.g(line_numbers_obj).pos();
         var textarea_coords     = june.g(textarea_obj).pos();
         line_numbers_obj.style.height = textarea_coords.h+'px';
-        lines_obj.style.height        = textarea_coords.h+'px';
-        lines_obj.style.width         = (textarea_coords.w-line_numbers_coords.w)+'px';
+        lines_obj.style.height = textarea_coords.h+'px';
+        lines_obj.style.width = (textarea_coords.w-line_numbers_coords.w)+'px';
         return lines_obj;
     };
 
+/* Creates char element. */
     function _createChar(id) {
         var char_obj = june.nu('span', {
             className: 'laatu-js-editor-char',
@@ -106,30 +116,37 @@ var edit0r = (function() {
         return char_obj;
     };
 
+/* Creates element that will be the cursor. */
     function _createCursor(id, char_obj) {
         var char_coords = june.g(char_obj).pos();
         var cursor_obj  = june.nu('div', {
             className: 'laatu-js-editor-cursor',
             id       : id+'_laatu-js-editor-cursor',
-            innerHTML: '<textarea rows="1" id="'+id+'_laatu-js-editor-cursor-input"></textarea>',
+            innerHTML:   '<textarea '
+                       + 'rows="1" '
+                       + 'id="'+id+'_laatu-js-editor-cursor-input"'
+                       + '></textarea>',
             style    : { height: char_coords.h+'px' }
         });
         june.g(document.body).app(cursor_obj);
     };
 
+/* Attaches to resize event on the textarea. */
     function _attachResize(id) {
         june.g(id).on('resize', function() {
-            var textarea_obj        = this;
-            var textarea_coords     = june.g(textarea_obj).pos();
-            var line_numbers_obj    = june.obj(id+'_laatu-js-editor-line-numbers');
+            var textarea_obj    = this;
+            var textarea_coords = june.g(textarea_obj).pos();
+            var line_numbers_ob = june.obj(id+'_laatu-js-editor-line-numbers');
             var line_numbers_coords = june.g(line_numbers_obj).pos();
             var lines_obj           = june.obj(id+'_laatu-js-editor-lines');
             line_numbers_obj.style.height = textarea_coords.h+'px';
             lines_obj.style.height        = textarea_coords.h+'px';
-            lines_obj.style.width         = (textarea_coords.w-line_numbers_coords.w)+'px';
+            lines_obj.style.width 
+                              = (textarea_coords.w-line_numbers_coords.w)+'px';
         });
     };
 
+/* Attaches focusing on the input once editor element is clicked. */
     function _attachClick(id) {
         june.g(id+'_laatu-js-editor-lines').on('click', function() {
             var id = this.id.split('_')[0];
@@ -137,15 +154,18 @@ var edit0r = (function() {
         });
     };
 
+/* Attaches to scroll event of the editor. */
     function _attachScroll(id) {
         june.g(id+'_laatu-js-editor-lines').on('scroll', function() {
             var id = this.id.replace('_laatu-js-editor-lines', '');
             // @scope?
             refreshCursorPosition(id);
-            june.obj(id+'_laatu-js-editor-line-numbers').scrollTop = this.scrollTop;
+            june.obj(id+'_laatu-js-editor-line-numbers').scrollTop 
+                                                              = this.scrollTop;
         });
     };
 
+/* Adds key events. */
     function _attachKeys(id) {
         // @scope?
         june.g(document.body).on('keydown', function(evt) {
@@ -166,7 +186,10 @@ var edit0r = (function() {
             if (keyAltDown || keyCtrlDown)
                 return null;
 
-            if (evt.keyCode==37 || evt.keyCode==39 || evt.keyCode==38 || evt.keyCode==40 || evt.keyCode==8 || evt.keyCode==46 || evt.keyCode==13) {
+            if (evt.keyCode==37 || evt.keyCode==39 || evt.keyCode==38 ||
+                evt.keyCode==40 || evt.keyCode==8  || evt.keyCode==46 ||
+                evt.keyCode==13) 
+            {
                 evt.preventDefault();
             }
 
@@ -193,6 +216,7 @@ var edit0r = (function() {
         });
     };
 
+/* Main initialization method. */
     function init(id) {
         if (!june.obj(id, 'Element with id '+id+' not found.'))
             return false;
@@ -201,7 +225,8 @@ var edit0r = (function() {
 
         var textarea_obj     = june.obj(id);
         var textarea_coords  = june.g(textarea_obj).pos();
-        var container_obj    = _createContainer(id, textarea_coords.l, textarea_coords.t);
+        var container_obj    = _createContainer(id, textarea_coords.l, 
+                                                    textarea_coords.t);
         var line_numbers_obj = _createLineNumbers(id, container_obj);
         _createLines(id, textarea_obj, container_obj, line_numbers_obj);
         var char_obj = _createChar(id);
@@ -214,21 +239,28 @@ var edit0r = (function() {
         setCursorPosition(0,0);
     };
 
+/* Sets cursor position to specified row and column. */
     function setCursorPosition(row, col, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
         }
-        var container_coords = june.g(june.obj(id+'_laatu-js-editor-container')).pos();
-        var lines_coords     = june.g(june.obj(id+'_laatu-js-editor-lines')).pos();
-        var char_coords      = june.g(june.obj(id+'_laatu-js-editor-char')).pos();
-        var scroll           = getScroll();
+        var container_coords 
+                     = june.g(june.obj(id+'_laatu-js-editor-container')).pos();
 
-        var cursor_obj       = june.obj(id+'_laatu-js-editor-cursor');
+        var lines_coords = june.g(june.obj(id+'_laatu-js-editor-lines')).pos();
+        var char_coords = june.g(june.obj(id+'_laatu-js-editor-char')).pos();
+        var scroll = getScroll();
+
+        var cursor_obj = june.obj(id+'_laatu-js-editor-cursor');
     
         cursor_obj.style.zIndex   = 2000;
         cursor_obj.style.position = 'absolute';
-        cursor_obj.style.left     = (container_coords.l+lines_coords.l+(col*char_coords.w)-scroll.l)+'px';
-        cursor_obj.style.top      = (container_coords.t+lines_coords.t+(row*char_coords.h)-scroll.t)+'px';
+        cursor_obj.style.left     = (container_coords.l+lines_coords.l
+                                    +(col*char_coords.w)-scroll.l)
+                                    +'px';
+        cursor_obj.style.top      = (container_coords.t+lines_coords.t
+                                    +(row*char_coords.h)-scroll.t)
+                                    +'px';
 
         cursor_obj.col = col;
         cursor_obj.row = row;
@@ -241,6 +273,7 @@ var edit0r = (function() {
         setCursorPosition(cursor_obj.row, cursor_obj.col, id);
     };
 
+/* Return object containing cursor position: column and row. */
     function getCursorPosition(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -252,6 +285,7 @@ var edit0r = (function() {
         };
     };
 
+/* Returns left and top scroll. */
     function getScroll(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -261,6 +295,7 @@ var edit0r = (function() {
         return { l:el_lines.scrollLeft, t:el_lines.scrollTop };
     };
 
+/* Returns number of columns in a certain row. */
     function getLineColsCount(row, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -277,6 +312,7 @@ var edit0r = (function() {
         return null;
     };
 
+/* Returns contents of specified line. */
     function getLine(row, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -293,6 +329,7 @@ var edit0r = (function() {
         return null;
     };
 
+/* Returns number of lines. */
     function getRowsCount(row, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -302,6 +339,7 @@ var edit0r = (function() {
         return el_lines.childNodes.length;
     };
 
+/* Replaces specified line with content. */
     function replaceLine(row, content, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -320,6 +358,7 @@ var edit0r = (function() {
         }
     };
 
+/* Inserts content in a new line, after specified line. */
     function insertLineAfter(row, content, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -338,13 +377,15 @@ var edit0r = (function() {
                     if (i == lines_cnt) {
                         el_lines.appendChild(new_line);
                     } else {
-                        el_lines.insertBefore(new_line, el_lines.childNodes[i+1]);
+                        el_lines.insertBefore(new_line, 
+                                                     el_lines.childNodes[i+1]);
                     }
                 }
             }
         }
     };
 
+/* Removes specified line. */
     function removeLine(row, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -362,6 +403,7 @@ var edit0r = (function() {
         }
     };
 
+/* Adds line number. */
     function addLineNumber(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -370,18 +412,22 @@ var edit0r = (function() {
         var el_lines        = june.obj(id+'_laatu-js-editor-lines');
         var lines_cnt       = el_lines.childNodes.length + lineNumberAddon;
         var el_line_numbers = june.obj(id+'_laatu-js-editor-line-numbers');
-        el_line_numbers.innerHTML = el_line_numbers.innerHTML.replace('</pre>', "\n" + lines_cnt + '</pre>');
+        el_line_numbers.innerHTML = el_line_numbers.innerHTML
+                                   .replace('</pre>', "\n"+lines_cnt+'</pre>');
     };
 
+/* Removes last line number. */
     function removeLineNumber(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
         }
 
-        var el_line_numbers       = june.obj(id+'_laatu-js-editor-line-numbers');
-        el_line_numbers.innerHTML = el_line_numbers.innerHTML.replace(/\n[0-9]+\<\/pre\>/, '</pre>');
+        var el_line_numbers = june.obj(id+'_laatu-js-editor-line-numbers');
+        el_line_numbers.innerHTML = el_line_numbers.innerHTML
+                                       .replace(/\n[0-9]+\<\/pre\>/, '</pre>');
     };
 
+/* Moves cursor left. */
     function moveCursorLeft(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -393,6 +439,7 @@ var edit0r = (function() {
         }
     };
 
+/* Moves cursor right. */
     function moveCursorRight(c, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -408,6 +455,7 @@ var edit0r = (function() {
         }
     };
 
+/* Moves cursor up. */
     function moveCursorUp(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -425,6 +473,7 @@ var edit0r = (function() {
         }
     };
 
+/* Moves cursor down. */
     function moveCursorDown(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -443,6 +492,7 @@ var edit0r = (function() {
         }
     };
 
+/* Inserts text. */
     function insertText(t, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -458,7 +508,8 @@ var edit0r = (function() {
             return insertChar(t, id);
         }
 
-        var arr_lines = t.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ").split(/\n/);
+        var arr_lines = t.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ")
+                                                              .split(/\n/);
 
         var pos   = getCursorPosition(id);
         var line  = getLine(pos.r, id);
@@ -474,9 +525,11 @@ var edit0r = (function() {
                 insertLineAfter(pos.r+i-1, arr_lines[i], id);
             }
         }
-        setCursorPosition(pos.r+cnt_lines-1, arr_lines[cnt_lines-1].length, id);
+        setCursorPosition(pos.r+cnt_lines-1, arr_lines[cnt_lines-1].length, 
+                                                                           id);
     };
 
+/* Inserts one character. */
     function insertChar(c, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -490,6 +543,7 @@ var edit0r = (function() {
         moveCursorRight(c.length, id);
     };
 
+/* Removes a character at specified column. */
     function removeChar(col, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -502,6 +556,7 @@ var edit0r = (function() {
         replaceLine(pos.r, left + right, id);
     };
 
+/* Removes a character on the left of the cursor. */
     function removeCharLeft(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -516,6 +571,7 @@ var edit0r = (function() {
         }
     };
 
+/* Removes a character on the right of the cursor. */
     function removeCharRight(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -528,6 +584,7 @@ var edit0r = (function() {
         }
     };
 
+/* Breaks line at cursor position. */
     function breakLine(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -543,6 +600,7 @@ var edit0r = (function() {
         addLineNumber(id);
     };
 
+/* Joins line above from cursor position. */
     function joinLineAbove(row, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
@@ -560,6 +618,7 @@ var edit0r = (function() {
         removeLineNumber(id);
     };
 
+/* Public methods. */
     return {
         init                 : init,
         setCursorPosition    : setCursorPosition,

@@ -45,6 +45,10 @@ done. */
 /* Edit mode. Text can be edited only when edit mode is turned on. */
     var editMode        = false;
 
+/* Vim mode. If set to true then editor will behave like vim. This value is set
+when the editor is initialized. */
+    var vimMode         = false;
+
 /* Creates container element. */
     function _createContainer(id, l, t) {
         var c = june.nu('div', {
@@ -130,7 +134,7 @@ done. */
             innerHTML:   '<textarea '
                        + 'rows="1" '
                        + 'id="'+id+'_laatu-js-editor-cursor-input"'
-                       + 'disabled="disabled"></textarea>',
+                       + 'readonly="readonly"></textarea>',
             style    : { height: char_coords.h+'px' }
         });
         june.g(document.body).app(cursor_obj);
@@ -197,10 +201,21 @@ done. */
             {
                 evt.preventDefault();
             }
-            if (!editMode) {
-                if (evt.charCode==105) {
-                    evt.preventDefault();
-                    turnEditModeOn();
+
+        /* Turning on and off editing is available only when in vim mode. */
+            if (vimMode) {
+                if (!editMode) {
+                /* 'I' key. */
+                    if (evt.charCode==105) {
+                        evt.preventDefault();
+                        turnEditModeOn();
+                    }
+                } else {
+                /* 'Escape' key. */
+                    if (evt.keyCode==27) {
+                        evt.preventDefault();
+                        turnEditModeOff();
+                    }
                 }
             }
 
@@ -228,7 +243,7 @@ done. */
     };
 
 /* Main initialization method. */
-    function init(id) {
+    function init(id, o) {
         if (!june.obj(id, 'Element with id '+id+' not found.'))
             return false;
 
@@ -248,7 +263,18 @@ done. */
         _attachScroll(id);
         _attachResize(id);
         setCursorPosition(0,0);
-    };
+
+        turnEditModeOn();
+    /* If vim mode is to be turned on then editing is unavailable when
+    initialized. */
+        if (typeof(o) === 'object') {
+            if (typeof(o.vimMode) == 'boolean' && o.vimMode) {
+                vimMode = true;
+                turnEditModeOff();
+            }
+        }
+
+   };
 
 /* Sets cursor position to specified row and column. */
     function setCursorPosition(row, col, id) {
@@ -635,9 +661,19 @@ done. */
             var id = currentId;
         }
         editMode = true;
-        june.g(id+'_laatu-js-editor-cursor-input').attr('disabled', null);
+        june.g(id+'_laatu-js-editor-cursor-input').attr('readonly', null);
         june.obj(id+'_laatu-js-editor-cursor-input').focus();
     };
+
+/* Turns off edit mode */
+    function turnEditModeOff(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+        editMode = false;
+        june.g(id+'_laatu-js-editor-cursor-input').attr('readonly','readonly');
+        june.obj(id+'_laatu-js-editor-cursor-input').focus();
+    }
 
 /* Public methods. */
     return {

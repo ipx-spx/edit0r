@@ -86,20 +86,15 @@ when the editor is initialized. */
         } else {
             var cnt_lines = 1;
         }
-        var arr_lines     = textarea_obj.value.replace(/\n\n/g, "\n \n")
-                                              .replace(/\n$/g, "\n ")
-                                              .split(/\n/);
+        var arr_lines     = textarea_obj.value.split(/\n/);
         var line_numbers  = '';
         var lines_content = '';
         for (var i=0; i<cnt_lines+lineNumberAddon; i++) {
             line_numbers = line_numbers + (line_numbers!=''?"\n":'') + (i+1);
         }
         for (var i=0; i<cnt_lines; i++) {
-            if (arr_lines[i] == '') {
-                arr_lines[i] = ' ';
-            }
             lines_content = lines_content+'<pre>'
-                                         +june.enc(arr_lines[i])
+                                         +june.enc(arr_lines[i])+' '
                                          +'</pre>';
         }
         lines_obj.innerHTML        = lines_content;
@@ -289,7 +284,7 @@ when the editor is initialized. */
         var scroll = getScroll();
 
         var cursor_obj = june.obj(id+'_laatu-js-editor-cursor');
-    
+   
         cursor_obj.style.zIndex   = 2000;
         cursor_obj.style.position = 'absolute';
         cursor_obj.style.left     = (container_coords.l+lines_coords.l
@@ -342,7 +337,7 @@ when the editor is initialized. */
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    return june.dec(el_lines.childNodes[i].innerHTML).length;
+                    return june.dec(el_lines.childNodes[i].innerHTML).length-1;
                 }
             }
         }
@@ -359,7 +354,8 @@ when the editor is initialized. */
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    return june.dec(el_lines.childNodes[i].innerHTML);
+                    return june.dec(el_lines.childNodes[i].innerHTML)
+                               .replace(/ $/,'');
                 }
             }
         }
@@ -386,10 +382,7 @@ when the editor is initialized. */
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    if (content == '') {
-                        content = ' ';
-                    }
-                    el_lines.childNodes[i].innerHTML = june.enc(content);
+                    el_lines.childNodes[i].innerHTML = june.enc(content)+' ';
                 }
             }
         }
@@ -406,11 +399,8 @@ when the editor is initialized. */
         for (var i=0; i<lines_cnt; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    if (content == '') {
-                        content = ' ';
-                    }
                     var new_line = june.nu('pre');
-                    new_line.innerHTML = june.enc(content);
+                    new_line.innerHTML = june.enc(content)+' ';
                     if (i == lines_cnt) {
                         el_lines.appendChild(new_line);
                     } else {
@@ -545,8 +535,7 @@ when the editor is initialized. */
             return insertChar(t, id);
         }
 
-        var arr_lines = t.replace(/\n\n/g, "\n \n").replace(/\n$/g, "\n ")
-                                                              .split(/\n/);
+        var arr_lines = t.split(/\n/);
 
         var pos   = getCursorPosition(id);
         var line  = getLine(pos.r, id);

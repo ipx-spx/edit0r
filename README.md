@@ -5,10 +5,6 @@ nice looking (soon) editor.
 It is not totally functional and it has many bugs. Also, when it gets into some sort of working stable status, it will require
 re-factoring.
 
-## Requirements
-Requires June library at least in version 0.7.1. It can be found at the following URL: https://github.com/LaatuGroup/june.
-It is a submodule linked to vendor/laatu/june.
-
 ## Running
 Please download all the files and run test.html. There is an *init()* method called on *textEditor* object that initialises
 the editor.
@@ -21,9 +17,6 @@ Features to be implemented:
 * api for things like validation, syntax highlighting, importing and exporting.
 
 ### Known bugs so far
-JUNE needs updating!
-
 This list should probably be much longer:
-* when line gets empty, a space is getting inserted so that *pre* tag does not dissapear;
 * cursor should not get out of the box (both up and down);
 * if cursor gets out of the element then lines container should be scrolled so that the cursor stays viewable.

@@ -37,6 +37,11 @@ be input in many windows. */
     var keyAltDown      = false;
     var keyCtrlDown     = false;
 
+/* Sometimes few char keys need to be pressed to perform an action. This var is
+to store all pressed keys so far. This var is probably mostly used in vim mode,
+eg. for 'dd' to remove current line. */
+    var keyCombination  = '';
+
 /* We need numbers of line to be visible till the bottom of the container, even
 if there are actually less lines. Therefore below number is added to get that
 done. */
@@ -170,6 +175,59 @@ when the editor is initialized. */
     };
 
 /* Adds key events. */
+    function _handleNormalModeKeyEvent(evt) {
+        switch (evt.keyCode) {
+            case 37: moveCursorLeft();     break;
+            case 39: moveCursorRight(1);   break;
+            case 38: moveCursorUp();       break;
+            case 40: moveCursorDown();     break;
+            case 8:  if (editMode) { removeCharLeft();  } break;
+            case 46: if (editMode) { removeCharRight(); } break;
+            case 13: if (editMode) { breakLine();       } break;
+            default: break;
+        }
+    }
+
+    function _handleVimModeKeyEvent(evt) {
+        if (!editMode) {
+        /* 'i' key. */
+            if (evt.charCode==105 && !keyShiftDown) {
+                evt.preventDefault();
+                clearKeyCombination();
+                turnEditModeOn();
+            }
+        /* 'd' key. */
+            if (evt.charCode==100 && !keyShiftDown) {
+                evt.preventDefault();
+                keyCombination+='d';
+            }
+
+        /* Checking combinations. */
+            if (keyCombination == 'dd') {
+                clearKeyCombination();
+                removeCurrentLine();
+            } 
+        } 
+    /* 'Escape' key. */
+        if (evt.keyCode==27) {
+            evt.preventDefault();
+            turnEditModeOff();
+            clearKeyCombination();
+        }
+
+    /* Normal arrows etc. */
+        switch (evt.keyCode) {
+            case 37: moveCursorLeft();     break;
+            case 39: moveCursorRight(1);   break;
+            case 38: moveCursorUp();       break;
+            case 40: moveCursorDown();     break;
+            case 8:  if (editMode) { removeCharLeft();  } break;
+            case 46: if (editMode) { removeCharRight(); } break;
+            case 13: if (editMode) { breakLine();       } break;
+            default: break;
+        }
+    }
+
     function _attachKeys(id) {
         // @scope?
         june.g(document.body).on('keydown', function(evt) {
@@ -190,40 +248,19 @@ when the editor is initialized. */
             if (keyAltDown || keyCtrlDown)
                 return null;
 
-            if (evt.keyCode==37 || evt.keyCode==39 || evt.keyCode==38 ||
-                evt.keyCode==40 || evt.keyCode==8  || evt.keyCode==46 ||
-                evt.keyCode==13) 
-            {
-                evt.preventDefault();
-            }
+    /* Preventing default behavior for arrow keys, backspace, delete and
+    enter. */
+        if (evt.keyCode == 37 || evt.keyCode == 39 || evt.keyCode == 38 ||
+            evt.keyCode == 40 || evt.keyCode == 8  || evt.keyCode == 46 ||
+            evt.keyCode == 13) {
+            evt.preventDefault();
+        }
 
-        /* Turning on and off editing is available only when in vim mode. */
+        /* Keys are handled different in vim mode. */
             if (vimMode) {
-                if (!editMode) {
-                /* 'I' key. */
-                    if (evt.charCode==105) {
-                        evt.preventDefault();
-                        turnEditModeOn();
-                    }
-                } else {
-                /* 'Escape' key. */
-                    if (evt.keyCode==27) {
-                        evt.preventDefault();
-                        turnEditModeOff();
-                    }
-                }
-            }
-
-            // @scope?
-            switch (evt.keyCode) {
-                case 37: moveCursorLeft();     break;
-                case 39: moveCursorRight(1);   break;
-                case 38: moveCursorUp();       break;
-                case 40: moveCursorDown();     break;
-                case 8:  if (editMode) { removeCharLeft();  } break;
-                case 46: if (editMode) { removeCharRight(); } break;
-                case 13: if (editMode) { breakLine();       } break;
-                default: break;
+                _handleVimModeKeyEvent(evt);
+            } else {
+                _handleNormalModeKeyEvent(evt);
             }
         });
         june.g(id+'_laatu-js-editor-cursor-input').on('keyup', function(evt) {
@@ -644,6 +681,16 @@ when the editor is initialized. */
         removeLineNumber(id);
     };
 
+/* Removes current line */
+    function removeCurrentLine(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+
+        var pos = getCursorPosition(id);
+        removeLine(pos.r);
+    }
+
 /* Turns on edit mode. */
     function turnEditModeOn(id) {
         if (typeof(id) != 'string') {
@@ -662,6 +709,11 @@ when the editor is initialized. */
         editMode = false;
         june.g(id+'_laatu-js-editor-cursor-input').attr('readonly','readonly');
         june.obj(id+'_laatu-js-editor-cursor-input').focus();
+    }
+
+/* Clears all the pressed keys so far. */
+    function clearKeyCombination() {
+        keyCombination = '';
     }
 
 /* Public methods. */
@@ -690,7 +742,9 @@ when the editor is initialized. */
         removeCharRight      : removeCharRight,
         breakLine            : breakLine,
         joinLineAbove        : joinLineAbove,
-        turnEditModeOn       : turnEditModeOn
+        removeCurrentLine    : removeCurrentLine,
+        turnEditModeOn       : turnEditModeOn,
+        clearKeyCombination  : clearKeyCombination
     };
 })();
 

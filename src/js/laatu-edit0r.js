@@ -206,7 +206,16 @@ when the editor is initialized. */
             if (keyCombination == 'dd') {
                 clearKeyCombination();
                 removeCurrentLine();
-            } 
+            }
+            if (keyCombination == 'd' && evt.keyCode == 38) {
+                clearKeyCombination();
+                removeCurrentLine();
+                removePreviousLine();
+            }
+            if (keyCombination == 'd' && evt.keyCode == 40) {
+                removeNextLine();
+                removeCurrentLine();
+            }
         } 
     /* 'Escape' key. */
         if (evt.keyCode==27) {
@@ -338,7 +347,16 @@ when the editor is initialized. */
     };
 
     function refreshCursorPosition(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
         var cursor_obj = june.obj(id+'_laatu-js-editor-cursor');
+    /* If cursor is below text (eg. because we removed lines), it needs to be
+    moved to the last line. */ 
+        if (cursor_obj.row > (getRowsCount()-1)) {
+            cursor_obj.row = getRowsCount()-1;
+            cursor_obj.col = 0;
+        }
         setCursorPosition(cursor_obj.row, cursor_obj.col, id);
     };
 
@@ -681,14 +699,45 @@ when the editor is initialized. */
         removeLineNumber(id);
     };
 
-/* Removes current line */
+/* Removes current line. */
     function removeCurrentLine(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
         }
 
         var pos = getCursorPosition(id);
-        removeLine(pos.r);
+        if (getRowsCount()>1) {
+            removeLine(pos.r);
+        } else {
+            replaceLine(0,'');
+        }
+        refreshCursorPosition();
+    }
+
+/* Removes previous line. */
+    function removePreviousLine(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+
+        var pos = getCursorPosition(id);
+        if (pos.r>0) {
+            removeLine(pos.r-1);
+        }
+        refreshCursorPosition();
+    }
+
+/* Removed next line. */
+    function removeNextLine(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+
+        var pos = getCursorPosition(id);
+        if (pos.r < (getRowsCount()-1)) {
+            removeLine(pos.r+1);
+        }
+        refreshCursorPosition();
     }
 
 /* Turns on edit mode. */
@@ -743,6 +792,8 @@ when the editor is initialized. */
         breakLine            : breakLine,
         joinLineAbove        : joinLineAbove,
         removeCurrentLine    : removeCurrentLine,
+        removePreviousLine   : removePreviousLine,
+        removeNextLine       : removeNextLine,
         turnEditModeOn       : turnEditModeOn,
         clearKeyCombination  : clearKeyCombination
     };

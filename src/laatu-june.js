@@ -1,6 +1,5 @@
 /*
-June version 0.7.8, by Nicholas Gasior
-
+June, version 0.7.8, by Nicholas Gasior
 
 Copyright (c) 2016, Laatu
 All rights reserved.

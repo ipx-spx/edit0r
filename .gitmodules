@@ -1,4 +1,0 @@
-[submodule "vendor/laatu/june"]
-	path = vendor/laatu/june
-	url = https://github.com/laatugroup/june.git
-    branch = master

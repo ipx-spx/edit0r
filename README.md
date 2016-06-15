@@ -1,4 +1,4 @@
-# edit0r
+# Text Editor
 This is a simple *prototype* of text editor created using HTML and Javascript. It takes textarea and converts it into 
 nice looking (soon) editor.
 
@@ -10,7 +10,7 @@ Requires June library at least in version 0.7.1. It can be found at the followin
 It is a submodule linked to vendor/laatu/june.
 
 ## Running
-Please download all the files and run test.html. There is an *init()* method called on *edit0r* object that initialises
+Please download all the files and run test.html. There is an *init()* method called on *textEditor* object that initialises
 the editor.
 
 ### Future work

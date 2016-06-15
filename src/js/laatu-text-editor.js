@@ -1,5 +1,5 @@
 /*
-Edit0r, by Nicholas Gasior
+Text Editor, by Nicholas Gasior
 
 Copyright (c) 2016, Laatu
 All rights reserved.
@@ -25,11 +25,11 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-var edit0r = (function() {
+var textEditor = (function() {
 
-/* There might be many instances of edit0r but only one of them can be active
-(at least so far). Possible @todo is to make this an array so that text might
-be input in many windows. */
+/* There might be many instances of textEditor but only one of them can be 
+active (at least so far). Possible @todo is to make this an array so that text
+might be input in many windows. */
     var currentId       = '';
 
 /* Storing information about shift, alt and ctrl keys being down. */
@@ -57,13 +57,13 @@ when the editor is initialized. */
 /* Creates container element. */
     function _createContainer(id, l, t) {
         var c = june.nu('div', {
-            className: 'laatu-js-editor',
+            className: 'laatu-text-editor',
             style: {
                 position: 'absolute',
                 left    : l+'px',
                 top     : t+'px'
             },
-            id: id+'_laatu-js-editor-container'
+            id: id+'_laatu-text-editor-container'
         });
         june.g(document.body).app(c);
         return c;
@@ -72,8 +72,8 @@ when the editor is initialized. */
 /* Creates element containing line numbers. */
     function _createLineNumbers(id, c) {
         var l = june.nu('div', {
-            className: 'laatu-js-editor-line-numbers',
-            id       : id+'_laatu-js-editor-line-numbers'
+            className: 'laatu-text-editor-line-numbers',
+            id       : id+'_laatu-text-editor-line-numbers'
         });
         june.g(c).app(l);
         return l;
@@ -82,8 +82,8 @@ when the editor is initialized. */
 /* Creates element for every single line. */
     function _createLines(id, textarea_obj, container_obj, line_numbers_obj) {
         var lines_obj = june.nu('div', {
-            className: 'laatu-js-editor-lines',
-            id       : id+'_laatu-js-editor-lines'
+            className: 'laatu-text-editor-lines',
+            id       : id+'_laatu-text-editor-lines'
         });
         var match = textarea_obj.value.match(/\n/g);
         if (match !== null) {
@@ -117,8 +117,8 @@ when the editor is initialized. */
 /* Creates char element. */
     function _createChar(id) {
         var char_obj = june.nu('span', {
-            className: 'laatu-js-editor-char',
-            id       : id + '_laatu-js-editor-char',
+            className: 'laatu-text-editor-char',
+            id       : id + '_laatu-text-editor-char',
             innerHTML: '&nbsp;'
         });
         june.g(document.body).app(char_obj);
@@ -129,11 +129,11 @@ when the editor is initialized. */
     function _createCursor(id, char_obj) {
         var char_coords = june.g(char_obj).pos();
         var cursor_obj  = june.nu('div', {
-            className: 'laatu-js-editor-cursor',
-            id       : id+'_laatu-js-editor-cursor',
+            className: 'laatu-text-editor-cursor',
+            id       : id+'_laatu-text-editor-cursor',
             innerHTML:   '<textarea '
                        + 'rows="1" '
-                       + 'id="'+id+'_laatu-js-editor-cursor-input"'
+                       + 'id="'+id+'_laatu-text-editor-cursor-input"'
                        + 'readonly="readonly"></textarea>',
             style    : { height: char_coords.h+'px' }
         });
@@ -145,9 +145,9 @@ when the editor is initialized. */
         june.g(id).on('resize', function() {
             var textarea_obj    = this;
             var textarea_coords = june.g(textarea_obj).pos();
-            var line_numbers_ob = june.obj(id+'_laatu-js-editor-line-numbers');
+            var line_numbers_ob = june.obj(id+'_laatu-text-editor-line-numbers');
             var line_numbers_coords = june.g(line_numbers_obj).pos();
-            var lines_obj           = june.obj(id+'_laatu-js-editor-lines');
+            var lines_obj           = june.obj(id+'_laatu-text-editor-lines');
             line_numbers_obj.style.height = textarea_coords.h+'px';
             lines_obj.style.height        = textarea_coords.h+'px';
             lines_obj.style.width 
@@ -157,19 +157,19 @@ when the editor is initialized. */
 
 /* Attaches focusing on the input once editor element is clicked. */
     function _attachClick(id) {
-        june.g(id+'_laatu-js-editor-lines').on('click', function() {
+        june.g(id+'_laatu-text-editor-lines').on('click', function() {
             var id = this.id.split('_')[0];
-            june.obj(id+'_laatu-js-editor-cursor-input').focus();
+            june.obj(id+'_laatu-text-editor-cursor-input').focus();
         });
     };
 
 /* Attaches to scroll event of the editor. */
     function _attachScroll(id) {
-        june.g(id+'_laatu-js-editor-lines').on('scroll', function() {
-            var id = this.id.replace('_laatu-js-editor-lines', '');
+        june.g(id+'_laatu-text-editor-lines').on('scroll', function() {
+            var id = this.id.replace('_laatu-text-editor-lines', '');
             // @scope?
             refreshCursorPosition(id);
-            june.obj(id+'_laatu-js-editor-line-numbers').scrollTop 
+            june.obj(id+'_laatu-text-editor-line-numbers').scrollTop 
                                                               = this.scrollTop;
         });
     };
@@ -272,7 +272,7 @@ when the editor is initialized. */
                 _handleNormalModeKeyEvent(evt);
             }
         });
-        june.g(id+'_laatu-js-editor-cursor-input').on('keyup', function(evt) {
+        june.g(id+'_laatu-text-editor-cursor-input').on('keyup', function(evt) {
             var id  = this.id.split('_')[0];
             var val = this.value;
             if (val != '') { 
@@ -323,13 +323,13 @@ when the editor is initialized. */
             var id = currentId;
         }
         var container_coords 
-                     = june.g(june.obj(id+'_laatu-js-editor-container')).pos();
+                     = june.g(june.obj(id+'_laatu-text-editor-container')).pos();
 
-        var lines_coords = june.g(june.obj(id+'_laatu-js-editor-lines')).pos();
-        var char_coords = june.g(june.obj(id+'_laatu-js-editor-char')).pos();
+        var lines_coords = june.g(june.obj(id+'_laatu-text-editor-lines')).pos();
+        var char_coords = june.g(june.obj(id+'_laatu-text-editor-char')).pos();
         var scroll = getScroll();
 
-        var cursor_obj = june.obj(id+'_laatu-js-editor-cursor');
+        var cursor_obj = june.obj(id+'_laatu-text-editor-cursor');
    
         cursor_obj.style.zIndex   = 2000;
         cursor_obj.style.position = 'absolute';
@@ -343,14 +343,14 @@ when the editor is initialized. */
         cursor_obj.col = col;
         cursor_obj.row = row;
 
-        june.obj(id+'_laatu-js-editor-cursor-input').focus();
+        june.obj(id+'_laatu-text-editor-cursor-input').focus();
     };
 
     function refreshCursorPosition(id) {
         if (typeof(id) != 'string') {
             var id = currentId;
         }
-        var cursor_obj = june.obj(id+'_laatu-js-editor-cursor');
+        var cursor_obj = june.obj(id+'_laatu-text-editor-cursor');
     /* If cursor is below text (eg. because we removed lines), it needs to be
     moved to the last line. */ 
         if (cursor_obj.row > (getRowsCount()-1)) {
@@ -367,8 +367,8 @@ when the editor is initialized. */
         }
 
         return {
-            c: june.obj(id+'_laatu-js-editor-cursor').col,
-            r: june.obj(id+'_laatu-js-editor-cursor').row
+            c: june.obj(id+'_laatu-text-editor-cursor').col,
+            r: june.obj(id+'_laatu-text-editor-cursor').row
         };
     };
 
@@ -378,7 +378,7 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines = june.obj(id+'_laatu-js-editor-lines');
+        var el_lines = june.obj(id+'_laatu-text-editor-lines');
         return { l:el_lines.scrollLeft, t:el_lines.scrollTop };
     };
 
@@ -388,7 +388,7 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines = june.obj(id+'_laatu-js-editor-lines');
+        var el_lines = june.obj(id+'_laatu-text-editor-lines');
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
@@ -405,7 +405,7 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines = june.obj(id+'_laatu-js-editor-lines');
+        var el_lines = june.obj(id+'_laatu-text-editor-lines');
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
@@ -423,7 +423,7 @@ when the editor is initialized. */
             var id = currentId;
         }
  
-        var el_lines = june.obj(id+'_laatu-js-editor-lines');
+        var el_lines = june.obj(id+'_laatu-text-editor-lines');
         return el_lines.childNodes.length;
     };
 
@@ -433,7 +433,7 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines = june.obj(id+'_laatu-js-editor-lines');
+        var el_lines = june.obj(id+'_laatu-text-editor-lines');
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
@@ -449,7 +449,7 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines  = june.obj(id+'_laatu-js-editor-lines');
+        var el_lines  = june.obj(id+'_laatu-text-editor-lines');
         var lines_cnt = el_lines.childNodes.length;
         for (var i=0; i<lines_cnt; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
@@ -473,7 +473,7 @@ when the editor is initialized. */
             var id = currentId;
         }
  
-        var el_lines  = june.obj(id+'_laatu-js-editor-lines');
+        var el_lines  = june.obj(id+'_laatu-text-editor-lines');
         var lines_cnt = el_lines.childNodes.length;
         for (var i=0; i<lines_cnt; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
@@ -491,9 +491,9 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines        = june.obj(id+'_laatu-js-editor-lines');
+        var el_lines        = june.obj(id+'_laatu-text-editor-lines');
         var lines_cnt       = el_lines.childNodes.length + lineNumberAddon;
-        var el_line_numbers = june.obj(id+'_laatu-js-editor-line-numbers');
+        var el_line_numbers = june.obj(id+'_laatu-text-editor-line-numbers');
         el_line_numbers.innerHTML = el_line_numbers.innerHTML
                                    .replace('</pre>', "\n"+lines_cnt+'</pre>');
     };
@@ -504,7 +504,7 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_line_numbers = june.obj(id+'_laatu-js-editor-line-numbers');
+        var el_line_numbers = june.obj(id+'_laatu-text-editor-line-numbers');
         el_line_numbers.innerHTML = el_line_numbers.innerHTML
                                        .replace(/\n[0-9]+\<\/pre\>/, '</pre>');
     };
@@ -746,8 +746,8 @@ when the editor is initialized. */
             var id = currentId;
         }
         editMode = true;
-        june.g(id+'_laatu-js-editor-cursor-input').attr('readonly', null);
-        june.obj(id+'_laatu-js-editor-cursor-input').focus();
+        june.g(id+'_laatu-text-editor-cursor-input').attr('readonly', null);
+        june.obj(id+'_laatu-text-editor-cursor-input').focus();
     };
 
 /* Turns off edit mode */
@@ -756,8 +756,8 @@ when the editor is initialized. */
             var id = currentId;
         }
         editMode = false;
-        june.g(id+'_laatu-js-editor-cursor-input').attr('readonly','readonly');
-        june.obj(id+'_laatu-js-editor-cursor-input').focus();
+        june.g(id+'_laatu-text-editor-cursor-input').attr('readonly','readonly');
+        june.obj(id+'_laatu-text-editor-cursor-input').focus();
     }
 
 /* Clears all the pressed keys so far. */

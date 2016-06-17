@@ -1,5 +1,5 @@
 /*
-June, version 0.7.8, by Nicholas Gasior
+June, version 0.7.9, by Nicholas Gasior
 
 Copyright (c) 2016, Laatu
 All rights reserved.
@@ -511,7 +511,7 @@ var june = (function() {
 
 /* Encoding and decoding '<' and '>' HTML chars. */
     var encodeHtml = function(s) { 
-        return s.replace('<',    '&lt;').replace('>',     '&gt'); 
+        return s.replace(/</g, '&lt;').replace(/>/g, '&gt'); 
     };
     var decodeHtml = function(s) {
         return s.replace(/\&lt\;/g, '<').replace(/\&gt\;/g, '>');

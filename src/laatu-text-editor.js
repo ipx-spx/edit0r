@@ -54,6 +54,9 @@ done. */
 when the editor is initialized. */
     var vimMode         = false;
 
+/* Selected text coordinates in visual mode. */
+    var selection       = {r:-1, c:-1};
+
 /* Creates container element. */
     function _createContainer(id, l, t) {
         var c = june.nu('div', {
@@ -145,7 +148,8 @@ when the editor is initialized. */
         june.g(id).on('resize', function() {
             var textarea_obj    = this;
             var textarea_coords = june.g(textarea_obj).pos();
-            var line_numbers_ob = june.obj(id+'_laatu-text-editor-line-numbers');
+            var line_numbers_ob 
+                              = june.obj(id+'_laatu-text-editor-line-numbers');
             var line_numbers_coords = june.g(line_numbers_obj).pos();
             var lines_obj           = june.obj(id+'_laatu-text-editor-lines');
             line_numbers_obj.style.height = textarea_coords.h+'px';
@@ -195,26 +199,57 @@ when the editor is initialized. */
                 evt.preventDefault();
                 clearKeyCombination();
                 turnEditModeOn();
+                return true;
             }
         /* 'd' key. */
             if (evt.charCode==100 && !keyShiftDown) {
                 evt.preventDefault();
-                keyCombination+='d';
+                if (keyCombination != 'd') {
+                    keyCombination='d';
+                    return true;
+                } else {
+                    clearKeyCombination();
+                    removeCurrentLine();
+                    return true;
+                }
+            }
+        /* 'v' key. */
+            if (evt.charCode==118 && !keyShiftDown) {
+                evt.preventDefault();
+                keyCombination='v';
+                startSelection();
+                return true;
             }
 
-        /* Checking combinations. */
-            if (keyCombination == 'dd') {
-                clearKeyCombination();
-                removeCurrentLine();
+        /* If 'd' was previously pressed and up or down arrow is pressed next
+        then additional lines need to be removed. If other key pressed, then
+        clear the combination. */
+            if (keyCombination == 'd') {
+                if (evt.charCode != 100) {
+                    clearKeyCombination();
+                }
+                if (evt.keyCode == 38) {
+                    removeCurrentLine();
+                    removePreviousLine();
+                    return true;
+                }
+                if (evt.keyCode == 40) {
+                    removeNextLine();
+                    removeCurrentLine();
+                    return true;
+                }
             }
-            if (keyCombination == 'd' && evt.keyCode == 38) {
+            if (keyCombination.match(/^d[^d]$/)) {
                 clearKeyCombination();
-                removeCurrentLine();
-                removePreviousLine();
+                return true;
             }
-            if (keyCombination == 'd' && evt.keyCode == 40) {
-                removeNextLine();
-                removeCurrentLine();
+
+        /* If arrow are not pressed then we clear the key combination. */
+            if (evt.keyCode!=37 && evt.keyCode!=38 && evt.keyCode!=39 &&
+                evt.keyCode!=40) 
+            {
+                stopSelection();
+                clearKeyCombination();
             }
         } 
     /* 'Escape' key. */
@@ -222,6 +257,8 @@ when the editor is initialized. */
             evt.preventDefault();
             turnEditModeOff();
             clearKeyCombination();
+            stopSelection();
+            return true;
         }
 
     /* Normal arrows etc. */
@@ -272,7 +309,7 @@ when the editor is initialized. */
                 _handleNormalModeKeyEvent(evt);
             }
         });
-        june.g(id+'_laatu-text-editor-cursor-input').on('keyup', function(evt) {
+        june.g(id+'_laatu-text-editor-cursor-input').on('keyup',function(evt) {
             var id  = this.id.split('_')[0];
             var val = this.value;
             if (val != '') { 
@@ -323,9 +360,9 @@ when the editor is initialized. */
             var id = currentId;
         }
         var container_coords 
-                     = june.g(june.obj(id+'_laatu-text-editor-container')).pos();
-
-        var lines_coords = june.g(june.obj(id+'_laatu-text-editor-lines')).pos();
+                   = june.g(june.obj(id+'_laatu-text-editor-container')).pos();
+        var lines_coords 
+                   = june.g(june.obj(id+'_laatu-text-editor-lines')).pos();
         var char_coords = june.g(june.obj(id+'_laatu-text-editor-char')).pos();
         var scroll = getScroll();
 
@@ -342,7 +379,6 @@ when the editor is initialized. */
 
         cursor_obj.col = col;
         cursor_obj.row = row;
-
         june.obj(id+'_laatu-text-editor-cursor-input').focus();
     };
 
@@ -392,7 +428,10 @@ when the editor is initialized. */
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    return june.dec(el_lines.childNodes[i].innerHTML).length-1;
+                    var h=el_lines.childNodes[i].innerHTML
+                         .replace(/<span[a-zA-Z0-9 ="_\-]*>/g,'')
+                         .replace(/<\/span>/g,'');
+                    return june.dec(h).length-1;
                 }
             }
         }
@@ -409,8 +448,10 @@ when the editor is initialized. */
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    return june.dec(el_lines.childNodes[i].innerHTML)
-                               .replace(/ $/,'');
+                    var h=el_lines.childNodes[i].innerHTML
+                         .replace(/<span[a-zA-Z0-9 ="_\-]*>/g,'')
+                         .replace(/<\/span>/g,'');
+                    return june.dec(h).replace(/ $/,'');
                 }
             }
         }
@@ -606,8 +647,7 @@ when the editor is initialized. */
                 insertLineAfter(pos.r+i-1, arr_lines[i], id);
             }
         }
-        setCursorPosition(pos.r+cnt_lines-1, arr_lines[cnt_lines-1].length, 
-                                                                           id);
+        setCursorPosition(pos.r+cnt_lines-1, arr_lines[cnt_lines-1].length,id);
     };
 
 /* Inserts one character. */
@@ -756,13 +796,25 @@ when the editor is initialized. */
             var id = currentId;
         }
         editMode = false;
-        june.g(id+'_laatu-text-editor-cursor-input').attr('readonly','readonly');
+        june.g(id+'_laatu-text-editor-cursor-input').attr('readonly',
+                                                                   'readonly');
         june.obj(id+'_laatu-text-editor-cursor-input').focus();
     }
 
 /* Clears all the pressed keys so far. */
     function clearKeyCombination() {
         keyCombination = '';
+    }
+
+/* Starts selection (visual mode). */
+    function startSelection() {
+        var p=getCursorPosition();
+        selection={r:p.r,c:p.c}; console.log(selection);
+    }
+
+/* Stop selection (visual mode). */
+    function stopSelection() {
+        selection={r:-1,c:-1};
     }
 
 /* Public methods. */
@@ -795,7 +847,9 @@ when the editor is initialized. */
         removePreviousLine   : removePreviousLine,
         removeNextLine       : removeNextLine,
         turnEditModeOn       : turnEditModeOn,
-        clearKeyCombination  : clearKeyCombination
+        clearKeyCombination  : clearKeyCombination,
+        startSelection       : startSelection,
+        stopSelection        : stopSelection
     };
 })();
 

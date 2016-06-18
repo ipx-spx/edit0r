@@ -30,34 +30,34 @@ var textEditor = (function() {
 /* There might be many instances of textEditor but only one of them can be 
 active (at least so far). Possible @todo is to make this an array so that text
 might be input in many windows. */
-    var currentId       = '';
+    var currentId         = '';
 
 /* Storing information about shift, alt and ctrl keys being down. */
-    var keyShiftDown    = false;
-    var keyAltDown      = false;
-    var keyCtrlDown     = false;
+    var keyShiftDown      = false;
+    var keyAltDown        = false;
+    var keyCtrlDown       = false;
 
 /* Sometimes few char keys need to be pressed to perform an action. This var is
 to store all pressed keys so far. This var is probably mostly used in vim mode,
 eg. for 'dd' to remove current line. */
-    var keyCombination  = '';
+    var keyCombination    = '';
 
 /* We need numbers of line to be visible till the bottom of the container, even
 if there are actually less lines. Therefore below number is added to get that
 done. */
-    var lineNumberAddon = 100;
+    var lineNumberAddon   = 100;
 
 /* Edit mode. Text can be edited only when edit mode is turned on. */
-    var editMode        = false;
+    var editMode          = false;
 
 /* Vim mode. If set to true then editor will behave like vim. This value is set
 when the editor is initialized. */
-    var vimMode         = false;
+    var vimMode           = false;
 
 /* Selected text coordinates in visual mode. */
-    var selection       = {r:-1, c:-1};
+    var selection         = {r:-1, c:-1};
 
-/* Creates container element. */
+/* Creates container element in an absolute position. */
     function _createContainer(id, l, t) {
         var c = june.nu('div', {
             className: 'laatu-text-editor',
@@ -72,18 +72,19 @@ when the editor is initialized. */
         return c;
     };
 
-/* Creates element containing line numbers. */
-    function _createLineNumbers(id, c) {
+/* Creates element containing line numbers in position related to container. */
+    function _createLineNumbers(id) {
         var l = june.nu('div', {
             className: 'laatu-text-editor-line-numbers',
-            id       : id+'_laatu-text-editor-line-numbers'
+            id       : id+'_laatu-text-editor-line-numbers',
+            style    : { position: 'absolute', left: '0', top: '0' }
         });
-        june.g(c).app(l);
+        june.g(id+'_laatu-text-editor-container').app(l);
         return l;
     };
 
 /* Creates element for every single line. */
-    function _createLines(id, textarea_obj, container_obj, line_numbers_obj) {
+    function _createLines(id, textarea_obj) {
         var lines_obj = june.nu('div', {
             className: 'laatu-text-editor-lines',
             id       : id+'_laatu-text-editor-lines'
@@ -106,16 +107,36 @@ when the editor is initialized. */
                                          +'</pre>';
         }
         lines_obj.innerHTML        = lines_content;
+
+        var line_numbers_obj = june.obj(id+'_laatu-text-editor-line-numbers');
         line_numbers_obj.innerHTML = '<pre>'+line_numbers+'</pre>';
+
+        var container_obj = june.obj(id+'_laatu-text-editor-container');
         june.g(container_obj).app(lines_obj);
 
         var line_numbers_coords = june.g(line_numbers_obj).pos();
         var textarea_coords     = june.g(textarea_obj).pos();
-        line_numbers_obj.style.height = textarea_coords.h+'px';
-        lines_obj.style.height = textarea_coords.h+'px';
-        lines_obj.style.width = (textarea_coords.w-line_numbers_coords.w)+'px';
+        june.g(lines_obj)
+               .sty('height', textarea_coords.h+'px')
+               .sty('width',  (textarea_coords.w-line_numbers_coords.w)+'px')
+               .sty('position', 'absolute')
+               .sty('left', (line_numbers_coords.w+line_numbers_coords.l)+'px')
+               .sty('top', line_numbers_coords.t+'px');
         return lines_obj;
     };
+
+/* Creates selection element that will contain visualization of selection */
+    function _createSelection(id) {
+        var sel_obj = june.nu('div', {
+            className: 'laatu-text-editor-selection-lines',
+            id       : id+'_laatu-text-editor-selection-lines'
+        });
+        var p = june.g(id+'_laatu-text-editor-lines').pos();
+        june.g(sel_obj).sty('position','absolute').sty('left', p.l+'px')
+                       .sty('top',  p.t+'px').sty('width', p.w+'px')
+                       .sty('height', p.h+'px');
+        june.g(id+'_laatu-text-editor-container').app(sel_obj);
+    }
 
 /* Creates char element. */
     function _createChar(id) {
@@ -129,8 +150,8 @@ when the editor is initialized. */
     };
 
 /* Creates element that will be the cursor. */
-    function _createCursor(id, char_obj) {
-        var char_coords = june.g(char_obj).pos();
+    function _createCursor(id) {
+        var char_coords = june.g(id+'_laatu-text-editor-char').pos();
         var cursor_obj  = june.nu('div', {
             className: 'laatu-text-editor-cursor',
             id       : id+'_laatu-text-editor-cursor',
@@ -156,6 +177,10 @@ when the editor is initialized. */
             lines_obj.style.height        = textarea_coords.h+'px';
             lines_obj.style.width 
                               = (textarea_coords.w-line_numbers_coords.w)+'px';
+            var lines_pos = june.g(lines_obj).pos();
+            june.g(id+'_laatu-text-editor-selection-lines')
+                .sty('top', lines_pos.t).sty('left', lines_pos.l)
+                .sty('width', lines_pos.w).sty('height', lines_pos.h);
         });
     };
 
@@ -175,6 +200,10 @@ when the editor is initialized. */
             refreshCursorPosition(id);
             june.obj(id+'_laatu-text-editor-line-numbers').scrollTop 
                                                               = this.scrollTop;
+            june.obj(id+'_laatu-text-editor-selection-lines').scrollTop
+                                                              = this.scrollTop;
+            june.obj(id+'_laatu-text-editor-selection-lines').scrollLeft
+                                                             = this.scrollLeft;
         });
     };
 
@@ -331,9 +360,10 @@ when the editor is initialized. */
         var textarea_coords  = june.g(textarea_obj).pos();
         var container_obj    = _createContainer(id, textarea_coords.l, 
                                                     textarea_coords.t);
-        var line_numbers_obj = _createLineNumbers(id, container_obj);
-        _createLines(id, textarea_obj, container_obj, line_numbers_obj);
-        var char_obj = _createChar(id);
+        _createLineNumbers(id);
+        _createLines(id, textarea_obj);
+        _createSelection(id);
+        _createChar(id);
         _createCursor(id, char_obj);
 
         _attachKeys(id);
@@ -380,6 +410,37 @@ when the editor is initialized. */
         cursor_obj.col = col;
         cursor_obj.row = row;
         june.obj(id+'_laatu-text-editor-cursor-input').focus();
+        
+    /* If visual mode is turned on (meaning selection is started) then some
+    pieces of text need to be highlighted. */
+        if (selection.r == -1)
+            return true;
+    /* Clearing existing selection. All rows that contain span with style are
+    in rowsWithSelection. */
+        removeVisualSelection();
+
+        var pos=getCursorPosition();
+        var rows=selection.r-pos.r;
+        var cols=selection.c-pos.c;
+    /* If nothing is selected (cursor is in the same place as the selection
+    starting point. */
+        if (rows==0 && cols==0)
+            return true;
+        if (cols==0) {
+            var start_col = (selection.c<pos.c?selection.c:pos.c);
+            var stop_col  = (selection.c>pos.c?selection.c:pos.c);
+            var row       = pos.r;
+            addVisualSelection(row, start_col, stop_col);
+        } else {
+            var start_row = (selection.r<pos.r?selection.r:pos.r);
+            var stop_row  = (selection.r>pos.r?selection.r:pos.r);
+            var start_col = (selection.r<pos.r?selection.c:pos.c);
+            var stop_col  = (selection.r<pos.r?pos.c:selection.c);
+            for (r=start_row; r<=stop_row; r++) {
+                var row_cols = getLineColsCount(r);
+                addVisualSelection(r, 0, row_cols);
+            }
+        }
     };
 
     function refreshCursorPosition(id) {
@@ -407,6 +468,15 @@ when the editor is initialized. */
             r: june.obj(id+'_laatu-text-editor-cursor').row
         };
     };
+
+/* Creates span that will visualize selection. */
+    function addVisualSelection(r, b, e) {
+    }
+
+/* Removes visualization of selection. */
+    function removeVisualSelection() {
+        june.g(id+'_laatu-text-editor-selection').html('');
+    }
 
 /* Returns left and top scroll. */
     function getScroll(id) {

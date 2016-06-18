@@ -73,11 +73,14 @@ when the editor is initialized. */
     };
 
 /* Creates element containing line numbers in position related to container. */
-    function _createLineNumbers(id) {
+    function _createLineNumbers(id, h) {
         var l = june.nu('div', {
             className: 'laatu-text-editor-line-numbers',
             id       : id+'_laatu-text-editor-line-numbers',
-            style    : { position: 'absolute', left: '0', top: '0' }
+            style    : { position: 'absolute', 
+                         left:     '0', 
+                         top:      '0',
+                         height:   h+'px' },
         });
         june.g(id+'_laatu-text-editor-container').app(l);
         return l;
@@ -360,11 +363,11 @@ when the editor is initialized. */
         var textarea_coords  = june.g(textarea_obj).pos();
         var container_obj    = _createContainer(id, textarea_coords.l, 
                                                     textarea_coords.t);
-        _createLineNumbers(id);
+        _createLineNumbers(id, textarea_coords.h);
         _createLines(id, textarea_obj);
         _createSelection(id);
         _createChar(id);
-        _createCursor(id, char_obj);
+        _createCursor(id);
 
         _attachKeys(id);
         _attachClick(id);

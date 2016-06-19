@@ -242,7 +242,22 @@ when the editor is initialized. */
             if (evt.charCode==100 && !keyShiftDown) {
                 evt.preventDefault();
                 if (keyCombination != 'd') {
-                    keyCombination='d';
+                    if (selection.r!=-1) {
+                        removeSelection();
+                        var pos=getCursorPosition();
+                        if (pos.r==selection.r) {
+                            var least_col=(pos.c<selection.c?pos.c:selection.c);
+                            var least_row=pos.r;
+                        } else {
+                            var least_row=(pos.r<selection.r?pos.r:selection.r);
+                            var least_col=(pos.r<selection.r?pos.c:selection.c);
+                        }
+                        setCursorPosition(least_row, least_col);
+                        stopSelection();
+                        removeVisualSelection();
+                    } else {
+                        keyCombination='d';
+                    }
                     return true;
                 } else {
                     clearKeyCombination();
@@ -1017,6 +1032,47 @@ when the editor is initialized. */
             text += (text!=''?"\n":"")+clipboardLines[i];
         }
         insertText(text);
+    }
+
+    function removeSelection() {
+        var pos=getCursorPosition();
+        var br=selection.r, bc=selection.c, er=pos.r, ec=pos.c;
+        var rows=br-er, cols=bc-ec;
+    /* If nothing is selected (cursor is in the same place as the selection
+    starting point. */
+        if (rows==0 && cols==0)
+            return true;
+        if (rows==0) {
+            var start_col = (bc<ec?bc:ec);
+            var stop_col  = (bc>ec?bc:ec);
+            var row       = er;
+            var line      = getLine(row);
+            var before    = line.substring(0, start_col);
+            var after     = line.substring(stop_col);
+            replaceLine(row, before+after);
+        } else {
+            var start_row = (br<er?br:er);
+            var stop_row  = (br>er?br:er);
+            var start_col = (br<er?bc:ec);
+            var stop_col  = (br<er?ec:bc);
+            clipboardLines = [];
+            var row_cols  = getLineColsCount(start_row);
+            var line      = getLine(start_row);
+            replaceLine(start_row, line.substring(0, start_col));
+            var row_cols  = getLineColsCount(stop_row);
+            var line      = getLine(stop_row);
+            replaceLine(stop_row, line.substring(stop_col));
+            var diff      = stop_row-start_row-1;
+            if (diff==1) {
+                removeLine(start_row+1);
+            } else if (diff>1) {
+                for (var j=stop_row-1; j>=start_row+1; j--) {
+                    removeLine(j);
+                }
+            }
+            setCursorPosition(start_row+1,0);
+            joinLineAbove();
+        }
     }
 
 /* Public methods. */

@@ -57,6 +57,9 @@ when the editor is initialized. */
 /* Selected text coordinates in visual mode. */
     var selection         = {r:-1, c:-1};
 
+/* Clipboard lines. */
+    var clipboardLines    = [];
+
 /* Creates container element in an absolute position. */
     function _createContainer(id, l, t) {
         var c = june.nu('div', {
@@ -252,6 +255,22 @@ when the editor is initialized. */
                 evt.preventDefault();
                 keyCombination='v';
                 startSelection();
+                return true;
+            }
+        /* 'y' key. */
+            if (evt.charCode==121 && !keyShiftDown) {
+                if (selection.r!=-1) {
+                    evt.preventDefault();
+                    keyCombination='';
+                    copySelection();
+                    stopSelection();
+                    removeVisualSelection();
+                    return true;
+                }
+            }
+        /* 'p' key. */
+            if (evt.charCode==112 && !keyShiftDown) {
+                pasteClipboard();
                 return true;
             }
 
@@ -952,6 +971,42 @@ when the editor is initialized. */
 /* Stop selection (visual mode). */
     function stopSelection() {
         selection={r:-1,c:-1};
+    }
+
+/* Copies selected text to clipboard. */
+    function copySelection() {
+        var pos=getCursorPosition();
+        var br=selection.r, bc=selection.c, er=pos.r, ec=pos.c;
+        var rows=br-er, cols=bc-ec;
+    /* If nothing is selected (cursor is in the same place as the selection
+    starting point. */
+        if (rows==0 && cols==0)
+            return true;
+        if (rows==0) {
+            var start_col = (bc<ec?bc:ec);
+            var stop_col  = (bc>ec?bc:ec);
+            var row       = er;
+            var line      = getLine(row);
+            var text      = line.substring(start_col, stop_col);
+            clipboardLines = [text];
+        } else {
+            var start_row = (br<er?br:er);
+            var stop_row  = (br>er?br:er);
+            var start_col = (br<er?bc:ec);
+            var stop_col  = (br<er?ec:bc);
+            clipboardLines = [];
+            for (r=start_row; r<=stop_row; r++) {
+                var row_cols = getLineColsCount(r);
+                var line     = getLine(r);
+                if (r==start_row) {
+                    clipboardLines.push(line.substring(start_col, row_cols));
+                } else if (r==stop_row) {
+                    clipboardLines.push(line.substring(0, stop_col));
+                } else {
+                    clipboardLines.push(line.substring(0, row_cols));
+                }
+            }
+        }
     }
 
 /* Public methods. */

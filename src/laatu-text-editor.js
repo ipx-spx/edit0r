@@ -269,7 +269,8 @@ when the editor is initialized. */
                 }
             }
         /* 'p' key. */
-            if (evt.charCode==112 && !keyShiftDown) {
+            if (evt.charCode==112 && !keyShiftDown && keyCombination=='' &&
+                clipboardLines.length>0) {
                 pasteClipboard();
                 return true;
             }
@@ -1007,6 +1008,15 @@ when the editor is initialized. */
                 }
             }
         }
+    }
+
+/* Inserts text from the clipboard in cursor place. */
+    function pasteClipboard() {
+        var text = '';
+        for (var i=0; i<clipboardLines.length; i++) {
+            text += (text!=''?"\n":"")+clipboardLines[i];
+        }
+        insertText(text);
     }
 
 /* Public methods. */

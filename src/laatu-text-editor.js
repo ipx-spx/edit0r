@@ -450,22 +450,27 @@ when the editor is initialized. */
         removeVisualSelection();
 
         var pos=getCursorPosition();
-        var rows=selection.r-pos.r;
-        var cols=selection.c-pos.c;
+        makeVisualSelection(selection.r,selection.c,pos.r,pos.c);
+    }
+
+/* Makes visual selection based on beginning and ending point. */
+    function makeVisualSelection(br,bc,er,ec) {
+        var rows=br-er;
+        var cols=bc-ec;
     /* If nothing is selected (cursor is in the same place as the selection
     starting point. */
         if (rows==0 && cols==0)
             return true;
         if (rows==0) {
-            var start_col = (selection.c<pos.c?selection.c:pos.c);
-            var stop_col  = (selection.c>pos.c?selection.c:pos.c);
-            var row       = pos.r;
+            var start_col = (bc<ec?bc:ec);
+            var stop_col  = (bc>ec?bc:ec);
+            var row       = er;
             addVisualSelection(row, start_col, stop_col);
         } else {
-            var start_row = (selection.r<pos.r?selection.r:pos.r);
-            var stop_row  = (selection.r>pos.r?selection.r:pos.r);
-            var start_col = (selection.r<pos.r?selection.c:pos.c);
-            var stop_col  = (selection.r<pos.r?pos.c:selection.c);
+            var start_row = (br<er?br:er);
+            var stop_row  = (br>er?br:er);
+            var start_col = (br<er?bc:ec);
+            var stop_col  = (br<er?ec:bc);
             for (r=start_row; r<=stop_row; r++) {
                 var row_cols = getLineColsCount(r);
                 if (r==start_row) {
@@ -506,7 +511,7 @@ when the editor is initialized. */
     };
 
 /* Creates span that will visualize selection. */
-    function addVisualSelection(r, b, e, id) { console.log(r+': '+b+' '+e);
+    function addVisualSelection(r, b, e, id) {
         if (typeof(id) != 'string') {
             var id = currentId;
         }

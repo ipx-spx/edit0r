@@ -231,6 +231,8 @@ when the editor is initialized. */
                 evt.preventDefault();
                 clearKeyCombination();
                 turnEditModeOn();
+                stopSelection();
+                removeVisualSelection();
                 return true;
             }
         /* 'd' key. */
@@ -290,20 +292,45 @@ when the editor is initialized. */
             turnEditModeOff();
             clearKeyCombination();
             stopSelection();
+            removeVisualSelection();
             return true;
         }
 
     /* Normal arrows etc. */
         switch (evt.keyCode) {
-            case 37: moveCursorLeft();     break;
-            case 39: moveCursorRight(1);   break;
-            case 38: moveCursorUp();       break;
-            case 40: moveCursorDown();     break;
-            case 8:  if (editMode) { removeCharLeft();  } break;
-            case 46: if (editMode) { removeCharRight(); } break;
-            case 13: if (editMode) { breakLine();       } break;
+            case 37: 
+                moveCursorLeft();
+                return true;
+                break;
+            case 39:
+                moveCursorRight(1);
+                return true;
+                break;
+            case 38:
+                moveCursorUp();
+                return true;
+                break;
+            case 40:
+                moveCursorDown();
+                return true;
+                break;
+            case 8:
+                if (editMode) { removeCharLeft(); }
+                return true;
+                break;
+            case 46:
+                if (editMode) { removeCharRight(); }
+                return true;
+                break;
+            case 13: 
+                if (editMode) { breakLine(); }
+                return true;
+                break;
             default: break;
         }
+
+        stopSelection();
+        removeVisualSelection();
     }
 
     function _attachKeys(id) {
@@ -429,7 +456,7 @@ when the editor is initialized. */
     starting point. */
         if (rows==0 && cols==0)
             return true;
-        if (cols==0) {
+        if (rows==0) {
             var start_col = (selection.c<pos.c?selection.c:pos.c);
             var stop_col  = (selection.c>pos.c?selection.c:pos.c);
             var row       = pos.r;
@@ -441,7 +468,13 @@ when the editor is initialized. */
             var stop_col  = (selection.r<pos.r?pos.c:selection.c);
             for (r=start_row; r<=stop_row; r++) {
                 var row_cols = getLineColsCount(r);
-                addVisualSelection(r, 0, row_cols);
+                if (r==start_row) {
+                    addVisualSelection(r, start_col, row_cols);
+                } else if (r==stop_row) {
+                    addVisualSelection(r, 0, stop_col);
+                } else {
+                    addVisualSelection(r, 0, row_cols);
+                }
             }
         }
     };
@@ -473,12 +506,38 @@ when the editor is initialized. */
     };
 
 /* Creates span that will visualize selection. */
-    function addVisualSelection(r, b, e) {
+    function addVisualSelection(r, b, e, id) { console.log(r+': '+b+' '+e);
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+        var el_lines = june.obj(id+'_laatu-text-editor-selection-lines');
+        for (var i=0; i<el_lines.childNodes.length; i++) {
+            if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
+                if (i==r && (e-b)>0) {
+                    var h=' '.repeat(b);
+                    h+='<span>';
+                    h+=' '.repeat(e-b);
+                    h+='</span>';
+                    el_lines.childNodes[i].innerHTML=h;
+                }
+            }
+        }
     }
 
 /* Removes visualization of selection. */
-    function removeVisualSelection() {
-        june.g(id+'_laatu-text-editor-selection').html('');
+    function removeVisualSelection(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+
+        var h = '';
+        var el_lines = june.obj(id+'_laatu-text-editor-lines');
+        for (var i=0; i<el_lines.childNodes.length; i++) {
+            if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
+                h+='<pre> </pre>';
+            }
+        }
+        june.g(id+'_laatu-text-editor-selection-lines').html(h);
     }
 
 /* Returns left and top scroll. */

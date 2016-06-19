@@ -67,4 +67,6 @@
   padding: 0;
   color: #eeeeee;
 }
-
+.laatu-text-editor-selection-lines span {
+  background: #5F8292;
+}

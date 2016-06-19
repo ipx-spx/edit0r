@@ -289,6 +289,18 @@ when the editor is initialized. */
                 pasteClipboard();
                 return true;
             }
+        /* 'g' key. */
+            if (evt.charCode==103 && !keyShiftDown) {
+                evt.preventDefault();
+                if (keyCombination != 'g') {
+                    keyCombination='g';
+                    return true;
+                } else {
+                    clearKeyCombination();
+                    moveCursorTop();
+                    return true;
+                }
+            }
 
         /* If 'd' was previously pressed and up or down arrow is pressed next
         then additional lines need to be removed. If other key pressed, then
@@ -320,7 +332,28 @@ when the editor is initialized. */
                 stopSelection();
                 clearKeyCombination();
             }
-        } 
+
+        /* Other characters that move the cursor. */
+            switch (evt.charCode) {
+            /* ^ */
+                case 94:
+                    moveCursorHome();
+                    return true;
+                    break;
+            /* $ */
+                case 36:
+                    moveCursorEnd();
+                    return true;
+                    break;
+            /* G */
+                case 71:
+                    moveCursorBottom();
+                    return true;
+                    break;
+                default: break;
+            }
+
+       }
     /* 'Escape' key. */
         if (evt.keyCode==27) {
             evt.preventDefault();
@@ -332,6 +365,7 @@ when the editor is initialized. */
         }
 
     /* Normal arrows etc. */
+        var pos = getCursorPosition();
         switch (evt.keyCode) {
             case 37: 
                 moveCursorLeft();
@@ -359,6 +393,14 @@ when the editor is initialized. */
                 break;
             case 13: 
                 if (editMode) { breakLine(); }
+                return true;
+                break;
+            case 36:
+                moveCursorHome();
+                return true;
+                break;
+            case 35:
+                moveCursorEnd();
                 return true;
                 break;
             default: break;
@@ -786,6 +828,42 @@ when the editor is initialized. */
             setCursorPosition(pos.r + 1, col, id);
         }
     };
+
+/* Moves cursor to the beginning of the line. */
+    function moveCursorHome(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+        var pos=getCursorPosition();
+        setCursorPosition(pos.r, 0);
+    }
+
+/* Moves cursor to end of the line. */
+    function moveCursorEnd(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+        var pos=getCursorPosition();
+        setCursorPosition(pos.r, getLineColsCount(pos.r));
+    }
+
+/* Moves cursor top. */
+    function moveCursorTop(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+        var pos=getCursorPosition();
+        setCursorPosition(0,0);
+    }
+
+/* Moves cursor bottom. */
+    function moveCursorBottom(id) {
+        if (typeof(id) != 'string') {
+            var id = currentId;
+        }
+        var pos=getCursorPosition();
+        setCursorPosition(getRowsCount()-1,0);
+    }
 
 /* Inserts text. */
     function insertText(t, id) {

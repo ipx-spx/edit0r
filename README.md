@@ -9,14 +9,10 @@ re-factoring.
 Please download all the files and run test.html. There is an *init()* method called on *textEditor* object that initialises
 the editor.
 
-### Future work
-Features to be implemented:
-* basic vim functionality (since vim is our favourite editor);
-* templates system (we might want some parts of our text to be editable and some don't);
-* use of browser storage;
-* api for things like validation, syntax highlighting, importing and exporting.
+### TODO
+* example needs nice html layout;
+* when cursor goes out of container area needs to be scrolled;
+* browser storage;
+* api for things like validation, syntax highlighting, importing and exporting;
+* template system.
 
-### Known bugs so far
-This list should probably be much longer:
-* cursor should not get out of the box (both up and down);
-* if cursor gets out of the element then lines container should be scrolled so that the cursor stays viewable.

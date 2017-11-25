@@ -1,5 +1,5 @@
 /*
-jshelper, version 2.0.1
+jshelper, version 2.0.2
 
 Copyright (c) 2015, 2016, 2017, 2018, Nicholas Gasior <nmls@laatu.se>
 All rights reserved.
@@ -448,17 +448,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     };
   };
 
-/* Short variable for all operations */
-  $ = function(idOrObj) {
+/* Global variable for all operations */
+  jsHelper = function(idOrObj) {
   /* Create js helper object */
     var el = new jshEl(idOrObj);
     el.init();
     return el;
   };
+  
 
 /* External functions - not related to DOM elements */
 /* Attaches function to event */
-  $.on = function(e, f) {
+  jsHelper.on = function(e, f) {
   /* On document load */
     if (e.toLowerCase() == "documentload") {
       var r = setInterval(function() {
@@ -471,36 +472,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   }
 
 /* Counter for uniquely generated ids. */
-  $.genUidsCnt = 0;
+  jsHelper.genUidsCnt = 0;
 /* Generates unique id dependant on current datetime and genUidsCnt counter */
-  $.uid = function() {
+  jsHelper.uid = function() {
     var curDate = new Date();
     var curUnixTime = parseInt(curDate.getTime() / 1000);
     curUnixTime = curUnixTime.toString();
-    $.genUidsCnt++;
-    return 'gen_'+curUnixTime+'_'+($.genUidsCnt-1);
+    jsHelper.genUidsCnt++;
+    return 'gen_'+curUnixTime+'_'+(jsHelper.genUidsCnt-1);
   };
   
 /* Shorter alias for document.getElementById */
-  $.elById = function(id) {
+  jsHelper.elById = function(id) {
     return document.getElementById(id);
   };
 
 /* Encodes/decodes '<' and '>' HTML chars */
-  $.encHtml = function(s) { 
+  jsHelper.encHtml = function(s) { 
     return s.replace(/</g, '&lt;').replace(/>/g, '&gt;'); 
   };
-  $.decHtml = function(s) {
+  jsHelper.decHtml = function(s) {
     return s.replace(/\&lt\;/g, '<').replace(/\&gt\;/g, '>');
   };
   
 /* Shorter alias to encodeURIComponent. */
-  $.encUri = function(s) { return encodeURIComponent(s); }
-  $.decUri = function(s) { return decodeURIComponent(s); }
+  jsHelper.encUri = function(s) { return encodeURIComponent(s); }
+  jsHelper.decUri = function(s) { return decodeURIComponent(s); }
 
 /* Creates new DOM element. To be used only in sensible places, eg. when object
  * is created once for a lifetime. */
-  $.nu = function(type, properties) {
+  jsHelper.nu = function(type, properties) {
     var o = document.createElement(type);
     if (typeof(properties) == 'object') {
       for (p in properties) {
@@ -515,3 +516,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     }
     return o;
   };
+  
+/* Short variable */
+/* @todo This needs to be handled differently so that function definitions are
+ * not duplicated. */
+  if (typeof(JSHELPER_COMPATIBLE) == "undefined") {
+    $ = function(idOrObj) { return jsHelper(idOrObj); }
+    $.on = function(e, f) { return jsHelper.on(e, f); }
+    $.uid = function() { return jsHelper.uid(); }
+    $.elById = function(id) { return jsHelper.elById(id); }
+    $.encHtml = function(s) { return jsHelper.encHtml(s); }
+    $.decHtml = function(s) { return jsHelper.decHtml(s); }
+    $.encUri = function(s) { return jsHelper.encUri(s); }
+    $.decUri = function(s) { return jsHelper.decUri(s); }
+    $.nu = function(type, properties) { return jsHelper.nu(type, properties); }
+  }

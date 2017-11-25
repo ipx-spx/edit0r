@@ -25,7 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-var textEditor = (function() {
+var jsNotepad = (function() {
 
 /* There might be many instances of textEditor but only one of them can be 
 active (at least so far). Possible @todo is to make this an array so that text
@@ -62,7 +62,7 @@ when the editor is initialized. */
 
 /* Creates container element in an absolute position. */
     function _createContainer(id, l, t) {
-        var c = june.nu('div', {
+        var c = jsHelper.nu('div', {
             className: 'jsnotepad',
             style: {
                 position: 'absolute',
@@ -71,13 +71,13 @@ when the editor is initialized. */
             },
             id: id+'_jsnotepad-container'
         });
-        june.g(document.body).app(c);
+        jsHelper(document.body).append(c);
         return c;
     };
 
 /* Creates element containing line numbers in position related to container. */
     function _createLineNumbers(id, h) {
-        var l = june.nu('div', {
+        var l = jsHelper.nu('div', {
             className: 'jsnotepad-line-numbers',
             id       : id+'_jsnotepad-line-numbers',
             style    : { position: 'absolute', 
@@ -85,13 +85,13 @@ when the editor is initialized. */
                          top:      '0',
                          height:   h+'px' },
         });
-        june.g(id+'_jsnotepad-container').app(l);
+        jsHelper(id+'_jsnotepad-container').append(l);
         return l;
     };
 
 /* Creates element for every single line. */
     function _createLines(id, textarea_obj) {
-        var lines_obj = june.nu('div', {
+        var lines_obj = jsHelper.nu('div', {
             className: 'jsnotepad-lines',
             id       : id+'_jsnotepad-lines'
         });
@@ -109,56 +109,56 @@ when the editor is initialized. */
         }
         for (var i=0; i<cnt_lines; i++) {
             lines_content = lines_content+'<pre>'
-                                         +june.enc(arr_lines[i])+' '
+                                         +jsHelper.encHtml(arr_lines[i])+' '
                                          +'</pre>';
         }
         lines_obj.innerHTML        = lines_content;
 
-        var line_numbers_obj = june.obj(id+'_jsnotepad-line-numbers');
+        var line_numbers_obj = jsHelper.elById(id+'_jsnotepad-line-numbers');
         line_numbers_obj.innerHTML = '<pre>'+line_numbers+'</pre>';
 
-        var container_obj = june.obj(id+'_jsnotepad-container');
-        june.g(container_obj).app(lines_obj);
+        var container_obj = jsHelper.elById(id+'_jsnotepad-container');
+        jsHelper(container_obj).append(lines_obj);
 
-        var line_numbers_coords = june.g(line_numbers_obj).pos();
-        var textarea_coords     = june.g(textarea_obj).pos();
-        june.g(lines_obj)
-               .sty('height', textarea_coords.h+'px')
-               .sty('width',  (textarea_coords.w-line_numbers_coords.w)+'px')
-               .sty('position', 'absolute')
-               .sty('left', (line_numbers_coords.w+line_numbers_coords.l)+'px')
-               .sty('top', line_numbers_coords.t+'px');
+        var line_numbers_coords = jsHelper(line_numbers_obj).pos();
+        var textarea_coords     = jsHelper(textarea_obj).pos();
+        jsHelper(lines_obj)
+               .style('height', textarea_coords.h+'px')
+               .style('width',  (textarea_coords.w-line_numbers_coords.w)+'px')
+               .style('position', 'absolute')
+               .style('left', (line_numbers_coords.w+line_numbers_coords.l)+'px')
+               .style('top', line_numbers_coords.t+'px');
         return lines_obj;
     };
 
 /* Creates selection element that will contain visualization of selection */
     function _createSelection(id) {
-        var sel_obj = june.nu('div', {
+        var sel_obj = jsHelper.nu('div', {
             className: 'jsnotepad-selection-lines',
             id       : id+'_jsnotepad-selection-lines'
         });
-        var p = june.g(id+'_jsnotepad-lines').pos();
-        june.g(sel_obj).sty('position','absolute').sty('left', p.l+'px')
-                       .sty('top',  p.t+'px').sty('width', p.w+'px')
-                       .sty('height', p.h+'px');
-        june.g(id+'_jsnotepad-container').app(sel_obj);
+        var p = jsHelper(id+'_jsnotepad-lines').pos();
+        jsHelper(sel_obj).style('position','absolute').style('left', p.l+'px')
+                       .style('top',  p.t+'px').style('width', p.w+'px')
+                       .style('height', p.h+'px');
+        jsHelper(id+'_jsnotepad-container').append(sel_obj);
     }
 
 /* Creates char element. */
     function _createChar(id) {
-        var char_obj = june.nu('span', {
+        var char_obj = jsHelper.nu('span', {
             className: 'jsnotepad-char',
             id       : id + '_jsnotepad-char',
             innerHTML: '&nbsp;'
         });
-        june.g(document.body).app(char_obj);
+        jsHelper(document.body).append(char_obj);
         return char_obj;
     };
 
 /* Creates element that will be the cursor. */
     function _createCursor(id) {
-        var char_coords = june.g(id+'_jsnotepad-char').pos();
-        var cursor_obj  = june.nu('div', {
+        var char_coords = jsHelper(id+'_jsnotepad-char').pos();
+        var cursor_obj  = jsHelper.nu('div', {
             className: 'jsnotepad-cursor',
             id       : id+'_jsnotepad-cursor',
             innerHTML:   '<textarea '
@@ -167,48 +167,48 @@ when the editor is initialized. */
                        + 'readonly="readonly"></textarea>',
             style    : { height: char_coords.h+'px' }
         });
-        june.g(document.body).app(cursor_obj);
+        jsHelper(document.body).append(cursor_obj);
     };
 
 /* Attaches to resize event on the textarea. */
     function _attachResize(id) {
-        june.g(id).on('resize', function() {
+        jsHelper(id).on('resize', function() {
             var textarea_obj    = this;
-            var textarea_coords = june.g(textarea_obj).pos();
+            var textarea_coords = jsHelper(textarea_obj).pos();
             var line_numbers_ob 
-                              = june.obj(id+'_jsnotepad-line-numbers');
-            var line_numbers_coords = june.g(line_numbers_obj).pos();
-            var lines_obj           = june.obj(id+'_jsnotepad-lines');
+                              = jsHelper.elById(id+'_jsnotepad-line-numbers');
+            var line_numbers_coords = jsHelper(line_numbers_obj).pos();
+            var lines_obj           = jsHelper.elById(id+'_jsnotepad-lines');
             line_numbers_obj.style.height = textarea_coords.h+'px';
             lines_obj.style.height        = textarea_coords.h+'px';
             lines_obj.style.width 
                               = (textarea_coords.w-line_numbers_coords.w)+'px';
-            var lines_pos = june.g(lines_obj).pos();
-            june.g(id+'_jsnotepad-selection-lines')
-                .sty('top', lines_pos.t).sty('left', lines_pos.l)
-                .sty('width', lines_pos.w).sty('height', lines_pos.h);
+            var lines_pos = jsHelper(lines_obj).pos();
+            jsHelper(id+'_jsnotepad-selection-lines')
+                .style('top', lines_pos.t).style('left', lines_pos.l)
+                .style('width', lines_pos.w).style('height', lines_pos.h);
         });
     };
 
 /* Attaches focusing on the input once editor element is clicked. */
     function _attachClick(id) {
-        june.g(id+'_jsnotepad-lines').on('click', function() {
+        jsHelper(id+'_jsnotepad-lines').on('click', function() {
             var id = this.id.split('_')[0];
-            june.obj(id+'_jsnotepad-cursor-input').focus();
+            jsHelper.elById(id+'_jsnotepad-cursor-input').focus();
         });
     };
 
 /* Attaches to scroll event of the editor. */
     function _attachScroll(id) {
-        june.g(id+'_jsnotepad-lines').on('scroll', function() {
+        jsHelper(id+'_jsnotepad-lines').on('scroll', function() {
             var id = this.id.replace('_jsnotepad-lines', '');
             // @scope?
             refreshCursorPosition(id);
-            june.obj(id+'_jsnotepad-line-numbers').scrollTop 
+            jsHelper.elById(id+'_jsnotepad-line-numbers').scrollTop 
                                                               = this.scrollTop;
-            june.obj(id+'_jsnotepad-selection-lines').scrollTop
+            jsHelper.elById(id+'_jsnotepad-selection-lines').scrollTop
                                                               = this.scrollTop;
-            june.obj(id+'_jsnotepad-selection-lines').scrollLeft
+            jsHelper.elById(id+'_jsnotepad-selection-lines').scrollLeft
                                                              = this.scrollLeft;
         });
     };
@@ -320,7 +320,7 @@ when the editor is initialized. */
                     return true;
                 }
             }
-            if (keyCombination.match(/^d[^d]$/)) {
+            if (keyCombination.match(/^d[^d]jsHelper/)) {
                 clearKeyCombination();
                 return true;
             }
@@ -340,7 +340,7 @@ when the editor is initialized. */
                     moveCursorHome();
                     return true;
                     break;
-            /* $ */
+            /* jsHelper */
                 case 36:
                     moveCursorEnd();
                     return true;
@@ -412,7 +412,7 @@ when the editor is initialized. */
 
     function _attachKeys(id) {
         // @scope?
-        june.g(document.body).on('keydown', function(evt) {
+        jsHelper(document.body).on('keydown', function(evt) {
             switch (evt.keyCode) {
                 case 16: keyShiftDown = true;  break;
                 case 18: keyAltDown   = true;  break;
@@ -445,7 +445,7 @@ when the editor is initialized. */
                 _handleNormalModeKeyEvent(evt);
             }
         });
-        june.g(id+'_jsnotepad-cursor-input').on('keyup',function(evt) {
+        jsHelper(id+'_jsnotepad-cursor-input').on('keyup',function(evt) {
             var id  = this.id.split('_')[0];
             var val = this.value;
             if (val != '') { 
@@ -458,13 +458,13 @@ when the editor is initialized. */
 
 /* Main initialization method. */
     function init(id, o) {
-        if (!june.obj(id, 'Element with id '+id+' not found.'))
+        if (!jsHelper.elById(id, 'Element with id '+id+' not found.'))
             return false;
 
         currentId = id;
 
-        var textarea_obj     = june.obj(id);
-        var textarea_coords  = june.g(textarea_obj).pos();
+        var textarea_obj     = jsHelper.elById(id);
+        var textarea_coords  = jsHelper(textarea_obj).pos();
         var container_obj    = _createContainer(id, textarea_coords.l, 
                                                     textarea_coords.t);
         _createLineNumbers(id, textarea_coords.h);
@@ -497,13 +497,13 @@ when the editor is initialized. */
             var id = currentId;
         }
         var container_coords 
-                   = june.g(june.obj(id+'_jsnotepad-container')).pos();
+                   = jsHelper(jsHelper.elById(id+'_jsnotepad-container')).pos();
         var lines_coords 
-                   = june.g(june.obj(id+'_jsnotepad-lines')).pos();
-        var char_coords = june.g(june.obj(id+'_jsnotepad-char')).pos();
+                   = jsHelper(jsHelper.elById(id+'_jsnotepad-lines')).pos();
+        var char_coords = jsHelper(jsHelper.elById(id+'_jsnotepad-char')).pos();
         var scroll = getScroll();
 
-        var cursor_obj = june.obj(id+'_jsnotepad-cursor');
+        var cursor_obj = jsHelper.elById(id+'_jsnotepad-cursor');
    
         cursor_obj.style.zIndex   = 2000;
         cursor_obj.style.position = 'absolute';
@@ -516,7 +516,7 @@ when the editor is initialized. */
 
         cursor_obj.col = col;
         cursor_obj.row = row;
-        june.obj(id+'_jsnotepad-cursor-input').focus();
+        jsHelper.elById(id+'_jsnotepad-cursor-input').focus();
         
     /* If visual mode is turned on (meaning selection is started) then some
     pieces of text need to be highlighted. */
@@ -565,7 +565,7 @@ when the editor is initialized. */
         if (typeof(id) != 'string') {
             var id = currentId;
         }
-        var cursor_obj = june.obj(id+'_jsnotepad-cursor');
+        var cursor_obj = jsHelper.elById(id+'_jsnotepad-cursor');
     /* If cursor is below text (eg. because we removed lines), it needs to be
     moved to the last line. */ 
         if (cursor_obj.row > (getRowsCount()-1)) {
@@ -582,8 +582,8 @@ when the editor is initialized. */
         }
 
         return {
-            c: june.obj(id+'_jsnotepad-cursor').col,
-            r: june.obj(id+'_jsnotepad-cursor').row
+            c: jsHelper.elById(id+'_jsnotepad-cursor').col,
+            r: jsHelper.elById(id+'_jsnotepad-cursor').row
         };
     };
 
@@ -592,7 +592,7 @@ when the editor is initialized. */
         if (typeof(id) != 'string') {
             var id = currentId;
         }
-        var el_lines = june.obj(id+'_jsnotepad-selection-lines');
+        var el_lines = jsHelper.elById(id+'_jsnotepad-selection-lines');
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i==r && (e-b)>0) {
@@ -613,13 +613,13 @@ when the editor is initialized. */
         }
 
         var h = '';
-        var el_lines = june.obj(id+'_jsnotepad-lines');
+        var el_lines = jsHelper.elById(id+'_jsnotepad-lines');
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 h+='<pre> </pre>';
             }
         }
-        june.g(id+'_jsnotepad-selection-lines').html(h);
+        jsHelper(id+'_jsnotepad-selection-lines').html(h);
     }
 
 /* Returns left and top scroll. */
@@ -628,7 +628,7 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines = june.obj(id+'_jsnotepad-lines');
+        var el_lines = jsHelper.elById(id+'_jsnotepad-lines');
         return { l:el_lines.scrollLeft, t:el_lines.scrollTop };
     };
 
@@ -638,14 +638,14 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines = june.obj(id+'_jsnotepad-lines');
+        var el_lines = jsHelper.elById(id+'_jsnotepad-lines');
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
                     var h=el_lines.childNodes[i].innerHTML
                          .replace(/<span[a-zA-Z0-9 ="_\-]*>/g,'')
                          .replace(/<\/span>/g,'');
-                    return june.dec(h).length-1;
+                    return jsHelper.decHtml(h).length-1;
                 }
             }
         }
@@ -658,14 +658,14 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines = june.obj(id+'_jsnotepad-lines');
+        var el_lines = jsHelper.elById(id+'_jsnotepad-lines');
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
                     var h=el_lines.childNodes[i].innerHTML
                          .replace(/<span[a-zA-Z0-9 ="_\-]*>/g,'')
                          .replace(/<\/span>/g,'');
-                    return june.dec(h).replace(/ $/,'');
+                    return jsHelper.decHtml(h).replace(/ jsHelper/,'');
                 }
             }
         }
@@ -678,7 +678,7 @@ when the editor is initialized. */
             var id = currentId;
         }
  
-        var el_lines = june.obj(id+'_jsnotepad-lines');
+        var el_lines = jsHelper.elById(id+'_jsnotepad-lines');
         return el_lines.childNodes.length;
     };
 
@@ -688,11 +688,11 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines = june.obj(id+'_jsnotepad-lines');
+        var el_lines = jsHelper.elById(id+'_jsnotepad-lines');
         for (var i=0; i<el_lines.childNodes.length; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    el_lines.childNodes[i].innerHTML = june.enc(content)+' ';
+                    el_lines.childNodes[i].innerHTML = jsHelper.encHtml(content)+' ';
                 }
             }
         }
@@ -704,13 +704,13 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines  = june.obj(id+'_jsnotepad-lines');
+        var el_lines  = jsHelper.elById(id+'_jsnotepad-lines');
         var lines_cnt = el_lines.childNodes.length;
         for (var i=0; i<lines_cnt; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
                 if (i == row) {
-                    var new_line = june.nu('pre');
-                    new_line.innerHTML = june.enc(content)+' ';
+                    var new_line = jsHelper.nu('pre');
+                    new_line.innerHTML = jsHelper.encHtml(content)+' ';
                     if (i == lines_cnt) {
                         el_lines.appendChild(new_line);
                     } else {
@@ -728,7 +728,7 @@ when the editor is initialized. */
             var id = currentId;
         }
  
-        var el_lines  = june.obj(id+'_jsnotepad-lines');
+        var el_lines  = jsHelper.elById(id+'_jsnotepad-lines');
         var lines_cnt = el_lines.childNodes.length;
         for (var i=0; i<lines_cnt; i++) {
             if (el_lines.childNodes[i].nodeType === Node.ELEMENT_NODE) {
@@ -746,9 +746,9 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_lines        = june.obj(id+'_jsnotepad-lines');
+        var el_lines        = jsHelper.elById(id+'_jsnotepad-lines');
         var lines_cnt       = el_lines.childNodes.length + lineNumberAddon;
-        var el_line_numbers = june.obj(id+'_jsnotepad-line-numbers');
+        var el_line_numbers = jsHelper.elById(id+'_jsnotepad-line-numbers');
         el_line_numbers.innerHTML = el_line_numbers.innerHTML
                                    .replace('</pre>', "\n"+lines_cnt+'</pre>');
     };
@@ -759,7 +759,7 @@ when the editor is initialized. */
             var id = currentId;
         }
 
-        var el_line_numbers = june.obj(id+'_jsnotepad-line-numbers');
+        var el_line_numbers = jsHelper.elById(id+'_jsnotepad-line-numbers');
         el_line_numbers.innerHTML = el_line_numbers.innerHTML
                                        .replace(/\n[0-9]+\<\/pre\>/, '</pre>');
     };
@@ -1036,8 +1036,8 @@ when the editor is initialized. */
             var id = currentId;
         }
         editMode = true;
-        june.g(id+'_jsnotepad-cursor-input').attr('readonly', null);
-        june.obj(id+'_jsnotepad-cursor-input').focus();
+        jsHelper(id+'_jsnotepad-cursor-input').attr('readonly', null);
+        jsHelper.elById(id+'_jsnotepad-cursor-input').focus();
     };
 
 /* Turns off edit mode */
@@ -1046,9 +1046,9 @@ when the editor is initialized. */
             var id = currentId;
         }
         editMode = false;
-        june.g(id+'_jsnotepad-cursor-input').attr('readonly',
+        jsHelper(id+'_jsnotepad-cursor-input').attr('readonly',
                                                                    'readonly');
-        june.obj(id+'_jsnotepad-cursor-input').focus();
+        jsHelper.elById(id+'_jsnotepad-cursor-input').focus();
     }
 
 /* Clears all the pressed keys so far. */

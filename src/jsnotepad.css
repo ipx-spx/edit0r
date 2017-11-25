@@ -1,3 +1,6 @@
+#textarea-to-replace-container {
+  all: revert;
+}
 .jsnotepad {
   font-family: courier;
   font-size: 13px;  

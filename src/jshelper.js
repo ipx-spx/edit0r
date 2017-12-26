@@ -1,5 +1,5 @@
 /*
-jshelper, version 2.0.2
+jshelper, version 2.0.6
 
 Copyright (c) 2015, 2016, 2017, 2018, Nicholas Gasior <nmls@laatu.se>
 All rights reserved.
@@ -87,6 +87,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             }
           }
           c=a?n+(n!=''?' ':'')+cs:n;
+        } else {
+          c=a?cs:''
         }
         o[oi].className=c;
         if (oi == 0 && h)
@@ -355,6 +357,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       }
     }
 
+  /* Calls function on every element */
+    this.func = function(func) {
+      for (var i=0; i<o.length; i++) {
+        func(o[i]);
+      }
+    }
+
   /* Functions only returning values --------------------------------------- */
   /* Checks if element has class */
     this.hasClass = function(r) { 
@@ -385,6 +394,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       }
       return _returnArray(out);
     };
+  /* Returns number of DOM elements selected */
+    this.length = function() {
+      return o.length;
+    }
 
   /* DOM elements modifiers ------------------------------------------------ */
   /* Removes DOM elements that do not have class */
@@ -392,6 +405,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       var newObjs=[];
       for (var oi=0; oi<o.length; oi++) {
         if (_hasObjClass(o[oi],c)) {
+          newObjs.push(o[oi]);
+        }
+      }
+      setO(newObjs);
+      return this;
+    }
+  /* Removed DOM elements that do not match tag name */
+    this.filterTag = function(t) {
+      var newObjs=[];
+      for (var oi=0; oi<o.length; oi++) {
+        if (o[oi].tagName.toLowerCase() == t.toLowerCase()) {
           newObjs.push(o[oi]);
         }
       }
@@ -444,6 +468,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         }
       } 
       setO(newObjs);
+      return this;
+    };
+    
+  /* Sets current object to nth element */
+    this.nth = function(n) {
+      var newObjs = [];
+      if (o.length >= n) {
+        newObjs.push(o[n-1]);
+      }
+      setO(newObjs);
+      return this;
+    };
+    
+  /* Sets current object to first element */
+    this.first = function() {
+      this.nth(1);
+      return this;
+    };
+    
+  /* Sets current object to the last element */
+    this.last = function() {
+      var l = o.length;
+      this.nth(l);
       return this;
     };
   };

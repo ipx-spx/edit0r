@@ -1,5 +1,5 @@
 /*
-jsnotepad, version 2.0.0
+jsnotepad, version 2.1.0
 
 Copyright (c) 2016, 2017, 2018, Nicholas Gasior <nmls@laatu.se>
 All rights reserved.
@@ -1189,3 +1189,24 @@ when the editor is initialized. */
     };
 })();
 
+jshEl.prototype.notepad = function(opts) {
+  this.func(function(el) {
+    if ($(el).attr('id') === null) {
+      $(el).attr('id', $.uid());
+    }
+    $.notepad('#'+$(el).attr('id'), opts);
+  });
+}
+
+jsHelper.notepad = function(src, opts) {
+  if (src[0] == '#' && src.length > 1) {
+    var id = src.substring(1);
+    if (jsHelper(id).length() != 1)
+      return false;
+    jsNotepad.init(id, opts);
+  }
+};
+
+if (typeof(JSHELPER_COMPATIBLE) == "undefined") {
+  $.notepad = function(src, opts) { jsHelper.notepad(src, opts); };
+}

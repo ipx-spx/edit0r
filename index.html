@@ -7,34 +7,31 @@
 <title>jsnotepad - simple JavaScript text editor that replaces textarea</title>
 <link href="src/jsnotepad.css" rel="stylesheet">
 <style>
-    body { margin:0; padding:0; }
+    body { margin:0; padding:0; overflow:hidden }
     textarea { margin:0; padding:0; border:0; }
 </style>
 </head>
 <body>
     <div>
-        <textarea style="width:1024px;height:500px; margin:100px 0 0 50px" id="code">This is first line of the text.
+        <textarea style="width:100px;height:100px; margin:0" id="notepad"></textarea>
+    </div>
+</body>
+<script src="src/jshelper.js"></script>
+<script src="src/jsnotepad.js"></script>
+<script>
+    $.on("documentload", function() {
+        var pos = $(window).pos();
+        $('notepad').style('width', pos.w+'px').style('height', pos.h+'px')
+          .style('padding', 0).style('margin', 0).html(
+`This is first line of the text.
 And this one is next.
 
 Fourth one.
 
 Sixth one.
 
-Later ones...</textarea>
-    </div>
-</body>
-<script src="src/jshelper.js"></script>
-<script src="src/jsnotepad.js"></script>
-<script>
-    function resizeTextarea() {
-        var w = $(window).pos().w-2+'px';
-        var h = $(window).pos().h+'px';
-    }
-
-    $.on("documentload", function() {
-        resizeTextarea();
-        $(document.body).on('resize', function() { resizeTextarea(); });
-        jsNotepad.init('code',{vimMode:true});
+Later ones...`);
+        $('notepad').notepad();
     });
 </script>
 </html>

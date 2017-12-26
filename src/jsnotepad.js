@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 var jsNotepad = (function() {
 
-/* There might be many instances of textEditor but only one of them can be 
+/* There might be many instances of jsNotepad but only one of them can be 
 active (at least so far). Possible @todo is to make this an array so that text
 might be input in many windows. */
     var currentId         = '';

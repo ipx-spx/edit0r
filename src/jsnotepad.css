@@ -3,26 +3,29 @@
 }
 .jsnotepad {
   font-family: courier;
-  font-size: 13px;  
+  font-size: 12px;  
 }
 .jsnotepad-line-numbers {
-  background: #7994AC;
+  background: #222222;
   text-align: right;
   width: 40px;
   float: left;
   padding-right: 2px;
   overflow: hidden;
+  font-size: 12px;
 }
 .jsnotepad-line-numbers pre {
   margin: 0;
   padding: 0;
 }
 .jsnotepad-lines {
+  background: #141414;
   float: left;
   clear: right;
   padding: 0;
   overflow: scroll;
   z-index: 5000;
+  font-size: 12px;
 }
 .jsnotepad-lines pre {
   margin: 0;

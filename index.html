@@ -7,22 +7,34 @@
 <title>jsnotepad - simple JavaScript text editor that replaces textarea</title>
 <link href="src/jsnotepad.css" rel="stylesheet">
 <style>
-    body { margin:0; padding:0; overflow:hidden }
+    body { margin:40px; padding:30px; background: #040404; color: #999999;}
     textarea { margin:0; padding:0; border:0; }
 </style>
 </head>
 <body>
-    <div>
-        <textarea style="width:100px;height:100px; margin:0" id="notepad"></textarea>
-    </div>
+<div style="margin-bottom:20px">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque id lorem at tincidunt. Vestibulum eleifend pulvinar magna. Nullam id placerat quam. Aenean ut volutpat purus, sed euismod est. Integer ac nisl viverra, iaculis massa a, bibendum leo. Vivamus malesuada velit nec turpis posuere, in pharetra lacus blandit. Nullam non imperdiet erat. Fusce a turpis iaculis, consectetur mauris nec, cursus augue. Integer non aliquam elit. Nullam nec vulputate enim.
+
+Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed tempor congue, eros mauris pulvinar enim, ac tempus nisl nisi eleifend arcu. Nunc feugiat justo in metus dignissim, eget scelerisque magna elementum. Etiam rutrum erat luctus, tempor leo sed, congue nibh. Proin sit amet feugiat libero, vitae ultrices ante. Nullam laoreet urna vitae venenatis vehicula. Nulla euismod, arcu imperdiet euismod facilisis, justo dolor blandit dui, eu fringilla turpis sem at tortor. In eget felis at nulla tempor blandit sed nec turpis. Nullam auctor, lorem ac lobortis sodales, felis massa finibus tortor, et vestibulum arcu eros in ex. Morbi sit amet tristique lorem. Aliquam massa eros, feugiat eu semper ut, pellentesque at mauris. Donec efficitur justo nec metus malesuada, a fringilla neque lacinia. Donec ultricies elit tellus, vitae faucibus risus pretium vitae. Donec varius velit id aliquam pharetra.
+
+Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim. 
+</div>
+<div style="margin-top:40px; margin-bottom:40px">
+  <textarea style="width:400px;height:400px; margin:0" id="notepad"></textarea>
+</div>
+<div style="margin-bottom:20px">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque id lorem at tincidunt. Vestibulum eleifend pulvinar magna. Nullam id placerat quam. Aenean ut volutpat purus, sed euismod est. Integer ac nisl viverra, iaculis massa a, bibendum leo. Vivamus malesuada velit nec turpis posuere, in pharetra lacus blandit. Nullam non imperdiet erat. Fusce a turpis iaculis, consectetur mauris nec, cursus augue. Integer non aliquam elit. Nullam nec vulputate enim.
+
+Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed tempor congue, eros mauris pulvinar enim, ac tempus nisl nisi eleifend arcu. Nunc feugiat justo in metus dignissim, eget scelerisque magna elementum. Etiam rutrum erat luctus, tempor leo sed, congue nibh. Proin sit amet feugiat libero, vitae ultrices ante. Nullam laoreet urna vitae venenatis vehicula. Nulla euismod, arcu imperdiet euismod facilisis, justo dolor blandit dui, eu fringilla turpis sem at tortor. In eget felis at nulla tempor blandit sed nec turpis. Nullam auctor, lorem ac lobortis sodales, felis massa finibus tortor, et vestibulum arcu eros in ex. Morbi sit amet tristique lorem. Aliquam massa eros, feugiat eu semper ut, pellentesque at mauris. Donec efficitur justo nec metus malesuada, a fringilla neque lacinia. Donec ultricies elit tellus, vitae faucibus risus pretium vitae. Donec varius velit id aliquam pharetra.
+
+Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim. 
+</div>
 </body>
 <script src="src/jshelper.js"></script>
 <script src="src/jsnotepad.js"></script>
 <script>
     $.on("documentload", function() {
-        var pos = $(window).pos();
-        $('notepad').style('width', pos.w+'px').style('height', pos.h+'px')
-          .style('padding', 0).style('margin', 0).html(
+        $('notepad').html(
 `This is first line of the text.
 And this one is next.
 
@@ -30,7 +42,39 @@ Fourth one.
 
 Sixth one.
 
-Later ones...`);
+Later ones...
+
+orem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque id lorem at tincidunt. Vestibulum eleifend pulvinar magna. Nullam id placerat quam. Aenean ut volutpat purus, sed euismod est. Integer ac nisl viverra, iaculis massa a, bibendum leo. Vivamus malesuada velit nec turpis posuere, in pharetra lacus blandit. Nullam non imperdiet erat. Fusce a turpis iaculis, consectetur mauris nec, cursus augue. Integer non aliquam elit. Nullam nec vulputate enim.
+
+Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed tempor congue, eros mauris pulvinar enim, ac tempus nisl nisi eleifend arcu. Nunc feugiat justo in metus dignissim, eget scelerisque magna elementum. Etiam rutrum erat luctus, tempor leo sed, congue nibh. Proin sit amet feugiat libero, vitae ultrices ante. Nullam laoreet urna vitae venenatis vehicula. Nulla euismod, arcu imperdiet euismod facilisis, justo dolor blandit dui, eu fringilla turpis sem at tortor. In eget felis at nulla tempor blandit sed nec turpis. Nullam auctor, lorem ac lobortis sodales, felis massa finibus tortor, et vestibulum arcu eros in ex. Morbi sit amet tristique lorem. Aliquam massa eros, feugiat eu semper ut, pellentesque at mauris. Donec efficitur justo nec metus malesuada, a fringilla neque lacinia. Donec ultricies elit tellus, vitae faucibus risus pretium vitae. Donec varius velit id aliquam pharetra.
+
+Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim. 
+orem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque id lorem at tincidunt. Vestibulum eleifend pulvinar magna. Nullam id placerat quam. Aenean ut volutpat purus, sed euismod est. Integer ac nisl viverra, iaculis massa a, bibendum leo. Vivamus malesuada velit nec turpis posuere, in pharetra lacus blandit. Nullam non imperdiet erat. Fusce a turpis iaculis, consectetur mauris nec, cursus augue. Integer non aliquam elit. Nullam nec vulputate enim.
+
+Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed tempor congue, eros mauris pulvinar enim, ac tempus nisl nisi eleifend arcu. Nunc feugiat justo in metus dignissim, eget scelerisque magna elementum. Etiam rutrum erat luctus, tempor leo sed, congue nibh. Proin sit amet feugiat libero, vitae ultrices ante. Nullam laoreet urna vitae venenatis vehicula. Nulla euismod, arcu imperdiet euismod facilisis, justo dolor blandit dui, eu fringilla turpis sem at tortor. In eget felis at nulla tempor blandit sed nec turpis. Nullam auctor, lorem ac lobortis sodales, felis massa finibus tortor, et vestibulum arcu eros in ex. Morbi sit amet tristique lorem. Aliquam massa eros, feugiat eu semper ut, pellentesque at mauris. Donec efficitur justo nec metus malesuada, a fringilla neque lacinia. Donec ultricies elit tellus, vitae faucibus risus pretium vitae. Donec varius velit id aliquam pharetra.
+
+Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim. 
+orem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque id lorem at tincidunt. Vestibulum eleifend pulvinar magna. Nullam id placerat quam. Aenean ut volutpat purus, sed euismod est. Integer ac nisl viverra, iaculis massa a, bibendum leo. Vivamus malesuada velit nec turpis posuere, in pharetra lacus blandit. Nullam non imperdiet erat. Fusce a turpis iaculis, consectetur mauris nec, cursus augue. Integer non aliquam elit. Nullam nec vulputate enim.
+
+Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed tempor congue, eros mauris pulvinar enim, ac tempus nisl nisi eleifend arcu. Nunc feugiat justo in metus dignissim, eget scelerisque magna elementum. Etiam rutrum erat luctus, tempor leo sed, congue nibh. Proin sit amet feugiat libero, vitae ultrices ante. Nullam laoreet urna vitae venenatis vehicula. Nulla euismod, arcu imperdiet euismod facilisis, justo dolor blandit dui, eu fringilla turpis sem at tortor. In eget felis at nulla tempor blandit sed nec turpis. Nullam auctor, lorem ac lobortis sodales, felis massa finibus tortor, et vestibulum arcu eros in ex. Morbi sit amet tristique lorem. Aliquam massa eros, feugiat eu semper ut, pellentesque at mauris. Donec efficitur justo nec metus malesuada, a fringilla neque lacinia. Donec ultricies elit tellus, vitae faucibus risus pretium vitae. Donec varius velit id aliquam pharetra.
+
+Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim. 
+orem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque id lorem at tincidunt. Vestibulum eleifend pulvinar magna. Nullam id placerat quam. Aenean ut volutpat purus, sed euismod est. Integer ac nisl viverra, iaculis massa a, bibendum leo. Vivamus malesuada velit nec turpis posuere, in pharetra lacus blandit. Nullam non imperdiet erat. Fusce a turpis iaculis, consectetur mauris nec, cursus augue. Integer non aliquam elit. Nullam nec vulputate enim.
+
+Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed tempor congue, eros mauris pulvinar enim, ac tempus nisl nisi eleifend arcu. Nunc feugiat justo in metus dignissim, eget scelerisque magna elementum. Etiam rutrum erat luctus, tempor leo sed, congue nibh. Proin sit amet feugiat libero, vitae ultrices ante. Nullam laoreet urna vitae venenatis vehicula. Nulla euismod, arcu imperdiet euismod facilisis, justo dolor blandit dui, eu fringilla turpis sem at tortor. In eget felis at nulla tempor blandit sed nec turpis. Nullam auctor, lorem ac lobortis sodales, felis massa finibus tortor, et vestibulum arcu eros in ex. Morbi sit amet tristique lorem. Aliquam massa eros, feugiat eu semper ut, pellentesque at mauris. Donec efficitur justo nec metus malesuada, a fringilla neque lacinia. Donec ultricies elit tellus, vitae faucibus risus pretium vitae. Donec varius velit id aliquam pharetra.
+
+Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim. 
+orem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque id lorem at tincidunt. Vestibulum eleifend pulvinar magna. Nullam id placerat quam. Aenean ut volutpat purus, sed euismod est. Integer ac nisl viverra, iaculis massa a, bibendum leo. Vivamus malesuada velit nec turpis posuere, in pharetra lacus blandit. Nullam non imperdiet erat. Fusce a turpis iaculis, consectetur mauris nec, cursus augue. Integer non aliquam elit. Nullam nec vulputate enim.
+
+Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed tempor congue, eros mauris pulvinar enim, ac tempus nisl nisi eleifend arcu. Nunc feugiat justo in metus dignissim, eget scelerisque magna elementum. Etiam rutrum erat luctus, tempor leo sed, congue nibh. Proin sit amet feugiat libero, vitae ultrices ante. Nullam laoreet urna vitae venenatis vehicula. Nulla euismod, arcu imperdiet euismod facilisis, justo dolor blandit dui, eu fringilla turpis sem at tortor. In eget felis at nulla tempor blandit sed nec turpis. Nullam auctor, lorem ac lobortis sodales, felis massa finibus tortor, et vestibulum arcu eros in ex. Morbi sit amet tristique lorem. Aliquam massa eros, feugiat eu semper ut, pellentesque at mauris. Donec efficitur justo nec metus malesuada, a fringilla neque lacinia. Donec ultricies elit tellus, vitae faucibus risus pretium vitae. Donec varius velit id aliquam pharetra.
+
+Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim. 
+orem ipsum dolor sit amet, consectetur adipiscing elit. Duis scelerisque id lorem at tincidunt. Vestibulum eleifend pulvinar magna. Nullam id placerat quam. Aenean ut volutpat purus, sed euismod est. Integer ac nisl viverra, iaculis massa a, bibendum leo. Vivamus malesuada velit nec turpis posuere, in pharetra lacus blandit. Nullam non imperdiet erat. Fusce a turpis iaculis, consectetur mauris nec, cursus augue. Integer non aliquam elit. Nullam nec vulputate enim.
+
+Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed tempor congue, eros mauris pulvinar enim, ac tempus nisl nisi eleifend arcu. Nunc feugiat justo in metus dignissim, eget scelerisque magna elementum. Etiam rutrum erat luctus, tempor leo sed, congue nibh. Proin sit amet feugiat libero, vitae ultrices ante. Nullam laoreet urna vitae venenatis vehicula. Nulla euismod, arcu imperdiet euismod facilisis, justo dolor blandit dui, eu fringilla turpis sem at tortor. In eget felis at nulla tempor blandit sed nec turpis. Nullam auctor, lorem ac lobortis sodales, felis massa finibus tortor, et vestibulum arcu eros in ex. Morbi sit amet tristique lorem. Aliquam massa eros, feugiat eu semper ut, pellentesque at mauris. Donec efficitur justo nec metus malesuada, a fringilla neque lacinia. Donec ultricies elit tellus, vitae faucibus risus pretium vitae. Donec varius velit id aliquam pharetra.
+
+Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim.
+`);
         $('notepad').notepad();
     });
 </script>

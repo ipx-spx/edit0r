@@ -25,6 +25,112 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+var jsNotepad2 = (function() {
+/* We need numbers of line to be visible till the bottom of the container, even
+if there are actually less lines. Therefore below number is added to get that
+done. */
+    var extraLines = 100;
+
+/* Creates container element in an absolute position. */
+  function _createContainer(o) {
+    var id = o.id+'_jsnotepad-container';
+    if (jsHelper(id).length() == 1)
+      return jsHelper.elById(id);
+
+    var pos = $(o).pos();
+    var c = jsHelper.nu('div', { className: 'jsnotepad', id: id,
+                    style: { position: 'absolute', left: '0px', top: '0px' }});
+    var par = jsHelper(o).parent().style('position', 'relative').append(c);
+    return c;
+  };
+
+/* Creates element containing line numbers in position related to container. */
+  function _createLineNumbers(o) {
+    var id = o.id+'_jsnotepad-line-numbers';
+    var h = jsHelper(o).pos().h;
+    if ($(id).length() < 1) {
+      var l = jsHelper.nu('div', { className: 'jsnotepad-line-numbers', id: id,
+                      style: {position: 'absolute', left: '0px', top: '0px'}});
+      jsHelper(o).parent().append(l);
+    } else {
+      var l = jsHelper.elById(id);
+    }
+    jsHelper(id).style('height', h+'px');
+    return l;
+  };
+
+/* Creates element for every single line. */
+  function _createLines(o) {
+    var id = o.id+'_jsnotepad-lines', id_nums = o.id+'_jsnotepad-line-numbers';
+    if ($(id).length() < 1) {
+      var lns_obj = jsHelper.nu('div', {className: 'jsnotepad-lines', id: id});
+    /* Calculate number of lines by splitting the text with \n */
+      var match = jsHelper(o).val().match(/\n/g),
+        cnt_lns = (match !== null ? match.length+1 : 1),
+        arr_lns = jsHelper(o).val().split(/\n/), ln_nums  = '', lns_html = '';
+    /* Generate preformatted element for every line. */
+      for (var i=0; i<cnt_lns; i++) {
+        lns_html = lns_html+'<pre>'+jsHelper.encHtml(arr_lns[i])+' '+'</pre>';
+      }
+      jsHelper(lns_obj).html(lns_html);
+    /* Add lines object to the container*/
+      jsHelper(o.id+'_jsnotepad-container').append(lns_obj);
+
+    /* Generate line numbers. */
+      for (var i=0; i<cnt_lns+extraLines; i++) {
+        ln_nums = ln_nums+(ln_nums!=''?"\n":'')+(i+1);
+      }
+      jsHelper(id_nums).html('<pre>'+ln_nums+'</pre>');
+    } else {
+      var lns_obj = jsHelper.elById(id);
+    }
+
+    /* Set position and size of lines element */
+    var ln_nums_pos = jsHelper(id_nums).pos();
+    var o_pos = jsHelper(o).pos();
+    jsHelper(lns_obj).style('height', o_pos.h+'px')
+      .style('width', (o_pos.w-ln_nums_pos.w)+'px').style('position','absolute')
+      .style('top', '0px').style('left', ln_nums_pos.w+'px');
+    return lns_obj;
+  };
+
+/* Main initialization method. */
+  function init(id, o) {
+    if (!jsHelper.elById(id)) {
+      console.log('Element with id '+id+' not found.');
+      return false;
+    }
+    var t = jsHelper.elById(id);
+    _createContainer(t);
+    _createLineNumbers(t);
+    _createLines(t);
+    /*_createSelection(id);
+    _createChar(id);
+    _createCursor(id);
+
+    _attachKeys(id);
+    _attachClick(id);
+    _attachScroll(id);
+    _attachResize(id);
+    setCursorPosition(0,0);
+
+    turnEditModeOn();*/
+/* If vim mode is to be turned on then editing is unavailable when
+initialized. */
+    /*if (typeof(o) === 'object') {
+      if (typeof(o.vimMode) == 'boolean' && o.vimMode) {
+        vimMode = true;
+        turnEditModeOff();
+      }
+    }*/
+ };
+ 
+ return {
+   init: init
+ };
+
+})();
+
 var jsNotepad = (function() {
 
 /* There might be many instances of jsNotepad but only one of them can be 
@@ -42,10 +148,6 @@ to store all pressed keys so far. This var is probably mostly used in vim mode,
 eg. for 'dd' to remove current line. */
     var keyCombination    = '';
 
-/* We need numbers of line to be visible till the bottom of the container, even
-if there are actually less lines. Therefore below number is added to get that
-done. */
-    var lineNumberAddon   = 100;
 
 /* Edit mode. Text can be edited only when edit mode is turned on. */
     var editMode          = false;
@@ -60,76 +162,8 @@ when the editor is initialized. */
 /* Clipboard lines. */
     var clipboardLines    = [];
 
-/* Creates container element in an absolute position. */
-    function _createContainer(id, l, t) {
-        var c = jsHelper.nu('div', {
-            className: 'jsnotepad',
-            style: {
-                position: 'absolute',
-                left    : l+'px',
-                top     : t+'px'
-            },
-            id: id+'_jsnotepad-container'
-        });
-        jsHelper(document.body).append(c);
-        return c;
-    };
 
-/* Creates element containing line numbers in position related to container. */
-    function _createLineNumbers(id, h) {
-        var l = jsHelper.nu('div', {
-            className: 'jsnotepad-line-numbers',
-            id       : id+'_jsnotepad-line-numbers',
-            style    : { position: 'absolute', 
-                         left:     '0', 
-                         top:      '0',
-                         height:   h+'px' },
-        });
-        jsHelper(id+'_jsnotepad-container').append(l);
-        return l;
-    };
 
-/* Creates element for every single line. */
-    function _createLines(id, textarea_obj) {
-        var lines_obj = jsHelper.nu('div', {
-            className: 'jsnotepad-lines',
-            id       : id+'_jsnotepad-lines'
-        });
-        var match = textarea_obj.value.match(/\n/g);
-        if (match !== null) {
-            var cnt_lines = match.length+1;
-        } else {
-            var cnt_lines = 1;
-        }
-        var arr_lines     = textarea_obj.value.split(/\n/);
-        var line_numbers  = '';
-        var lines_content = '';
-        for (var i=0; i<cnt_lines+lineNumberAddon; i++) {
-            line_numbers = line_numbers + (line_numbers!=''?"\n":'') + (i+1);
-        }
-        for (var i=0; i<cnt_lines; i++) {
-            lines_content = lines_content+'<pre>'
-                                         +jsHelper.encHtml(arr_lines[i])+' '
-                                         +'</pre>';
-        }
-        lines_obj.innerHTML        = lines_content;
-
-        var line_numbers_obj = jsHelper.elById(id+'_jsnotepad-line-numbers');
-        line_numbers_obj.innerHTML = '<pre>'+line_numbers+'</pre>';
-
-        var container_obj = jsHelper.elById(id+'_jsnotepad-container');
-        jsHelper(container_obj).append(lines_obj);
-
-        var line_numbers_coords = jsHelper(line_numbers_obj).pos();
-        var textarea_coords     = jsHelper(textarea_obj).pos();
-        jsHelper(lines_obj)
-               .style('height', textarea_coords.h+'px')
-               .style('width',  (textarea_coords.w-line_numbers_coords.w)+'px')
-               .style('position', 'absolute')
-               .style('left', (line_numbers_coords.w+line_numbers_coords.l)+'px')
-               .style('top', line_numbers_coords.t+'px');
-        return lines_obj;
-    };
 
 /* Creates selection element that will contain visualization of selection */
     function _createSelection(id) {
@@ -455,41 +489,6 @@ when the editor is initialized. */
             this.value = '';
         });
     };
-
-/* Main initialization method. */
-    function init(id, o) {
-        if (!jsHelper.elById(id, 'Element with id '+id+' not found.'))
-            return false;
-
-        currentId = id;
-
-        var textarea_obj     = jsHelper.elById(id);
-        var textarea_coords  = jsHelper(textarea_obj).pos();
-        var container_obj    = _createContainer(id, textarea_coords.l, 
-                                                    textarea_coords.t);
-        _createLineNumbers(id, textarea_coords.h);
-        _createLines(id, textarea_obj);
-        _createSelection(id);
-        _createChar(id);
-        _createCursor(id);
-
-        _attachKeys(id);
-        _attachClick(id);
-        _attachScroll(id);
-        _attachResize(id);
-        setCursorPosition(0,0);
-
-        turnEditModeOn();
-    /* If vim mode is to be turned on then editing is unavailable when
-    initialized. */
-        if (typeof(o) === 'object') {
-            if (typeof(o.vimMode) == 'boolean' && o.vimMode) {
-                vimMode = true;
-                turnEditModeOff();
-            }
-        }
-
-   };
 
 /* Sets cursor position to specified row and column. */
     function setCursorPosition(row, col, id) {
@@ -1187,7 +1186,7 @@ when the editor is initialized. */
         startSelection       : startSelection,
         stopSelection        : stopSelection
     };
-})();
+});
 
 jshEl.prototype.notepad = function(opts) {
   this.func(function(el) {
@@ -1203,7 +1202,7 @@ jsHelper.notepad = function(src, opts) {
     var id = src.substring(1);
     if (jsHelper(id).length() != 1)
       return false;
-    jsNotepad.init(id, opts);
+    jsNotepad2.init(id, opts);
   }
 };
 

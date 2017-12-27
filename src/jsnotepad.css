@@ -47,7 +47,7 @@
   opacity: 1;
   color: #ffffff;
   font-family: courier;
-  font-size: 13px;
+  font-size: 12px;
 }
 .jsnotepad-cursor textarea {
   margin: 0;
@@ -56,7 +56,7 @@
   color: #eeeeee;
   background: none;
   font-family: courier;
-  font-size: 13px;
+  font-size: 12px;
   text-align: left;
   resize: none;
   width: 0;

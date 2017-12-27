@@ -26,31 +26,48 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 var jsNotepad2 = (function() {
+/* Suffixes for ids of elements */
+  var _id_       = '_jsnotepad-';
+  var _id_cont   = _id_+'container';
+  var _id_lnnums = _id_+'lnnums';
+  var _id_lns    = _id_+'lns';
+/* Class names */
+  var cls_       = "jsnotepad-";
+  var cls_cont   = "jsnotepad";
+  var cls_lnnums = cls_+"line-numbers";
+  var cls_lns    = cls_+"lines";
 /* We need numbers of line to be visible till the bottom of the container, even
 if there are actually less lines. Therefore below number is added to get that
 done. */
-    var extraLines = 100;
+  var extraLines = 100;
+/* Helpers */
+  function _pre(s) {
+    return '<pre>'+jsHelper.encHtml(s)+'</pre>';
+  }
+  function _nuDiv(c, i) {
+    return jsHelper.nu('div', {className: c, id: i});
+  }
+  function _nuDivPosAbsLeft0Top0(c, i) {
+    return jsHelper.nu('div', {className: c, id: i, style: {position:'absolute',
+             left: '0px', top: '0px' }});
+  }
 
 /* Creates container element in an absolute position. */
   function _createContainer(o) {
-    var id = o.id+'_jsnotepad-container';
+    var id = o.id+_id_cont;
     if (jsHelper(id).length() == 1)
       return jsHelper.elById(id);
-
-    var pos = $(o).pos();
-    var c = jsHelper.nu('div', { className: 'jsnotepad', id: id,
-                    style: { position: 'absolute', left: '0px', top: '0px' }});
+    var c = _nuDivPosAbsLeft0Top0(cls_cont, id);
     var par = jsHelper(o).parent().style('position', 'relative').append(c);
     return c;
   };
 
 /* Creates element containing line numbers in position related to container. */
   function _createLineNumbers(o) {
-    var id = o.id+'_jsnotepad-line-numbers';
+    var id = o.id+_id_lnnums;
     var h = jsHelper(o).pos().h;
     if ($(id).length() < 1) {
-      var l = jsHelper.nu('div', { className: 'jsnotepad-line-numbers', id: id,
-                      style: {position: 'absolute', left: '0px', top: '0px'}});
+      var l = _nuDivPosAbsLeft0Top0(cls_lnnums, id);
       jsHelper(o).parent().append(l);
     } else {
       var l = jsHelper.elById(id);
@@ -61,26 +78,26 @@ done. */
 
 /* Creates element for every single line. */
   function _createLines(o) {
-    var id = o.id+'_jsnotepad-lines', id_nums = o.id+'_jsnotepad-line-numbers';
+    var id = o.id+_id_lns, id_nums = o.id+_id_lnnums;
     if ($(id).length() < 1) {
-      var lns_obj = jsHelper.nu('div', {className: 'jsnotepad-lines', id: id});
+      var lns_obj = _nuDiv(cls_lns, id);
     /* Calculate number of lines by splitting the text with \n */
       var match = jsHelper(o).val().match(/\n/g),
         cnt_lns = (match !== null ? match.length+1 : 1),
         arr_lns = jsHelper(o).val().split(/\n/), ln_nums  = '', lns_html = '';
     /* Generate preformatted element for every line. */
       for (var i=0; i<cnt_lns; i++) {
-        lns_html = lns_html+'<pre>'+jsHelper.encHtml(arr_lns[i])+' '+'</pre>';
+        lns_html = lns_html+_pre(jsHelper.encHtml(arr_lns[i])+' ');
       }
       jsHelper(lns_obj).html(lns_html);
     /* Add lines object to the container*/
-      jsHelper(o.id+'_jsnotepad-container').append(lns_obj);
+      jsHelper(o.id+_id_cont).append(lns_obj);
 
     /* Generate line numbers. */
       for (var i=0; i<cnt_lns+extraLines; i++) {
         ln_nums = ln_nums+(ln_nums!=''?"\n":'')+(i+1);
       }
-      jsHelper(id_nums).html('<pre>'+ln_nums+'</pre>');
+      jsHelper(id_nums).html(_pre(ln_nums));
     } else {
       var lns_obj = jsHelper.elById(id);
     }

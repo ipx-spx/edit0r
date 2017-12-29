@@ -76,3 +76,7 @@
 .jsnotepad-selection-lines span {
   background: #5F8292;
 }
+.jsnotepad-blur {
+  background: #000000;
+  opacity: 0.6;
+}

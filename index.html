@@ -29,6 +29,9 @@ Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed te
 
 Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim. 
 </div>
+<div style="margin-top:40px; margin-bottom:40px">
+  <textarea style="width:350px;height:300px; margin:0" id="notepad2">Textarea</textarea>
+</div>
 </body>
 <script src="src/jshelper.js"></script>
 <script src="src/jsnotepad.js"></script>
@@ -75,7 +78,8 @@ Aenean sodales quam eu ipsum facilisis fringilla. Maecenas dignissim, leo sed te
 
 Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In eu aliquam elit. Aliquam a lorem lacus. Vestibulum bibendum vestibulum hendrerit. Mauris eu justo metus. Donec quam justo, tristique eget leo quis, consectetur fermentum enim.
 `);
-        $('notepad').notepad();
+        $('notepad').notepad('init');
+        $('notepad2').notepad('init');
     });
 </script>
 </html>

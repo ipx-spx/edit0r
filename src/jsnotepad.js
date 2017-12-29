@@ -27,19 +27,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 var jsNotepad2 = (function() {
 /* Suffixes for ids of elements */
-  var _id_       = '_jsnotepad-';
-  var _id_cont   = _id_+'container';
-  var _id_lnnums = _id_+'lnnums';
-  var _id_lns    = _id_+'lns';
+  var _id_            = '_jsnotepad-';
+  var _id_cont        = _id_+'container';
+  var _id_lnnums      = _id_+'lnnums';
+  var _id_lns         = _id_+'lns';
+  var _id_char        = _id_+'char';
+  var _id_cursor      = _id_+'cursor';
+  var _id_cursorinput = _id_+'cursorinput';
+  var _id_blur        = _id_+'blur';
 /* Class names */
   var cls_       = "jsnotepad-";
   var cls_cont   = "jsnotepad";
   var cls_lnnums = cls_+"line-numbers";
   var cls_lns    = cls_+"lines";
+  var cls_char   = cls_+"char";
+  var cls_cursor = cls_+"cursor";
+  var cls_blur   = cls_+"blur";
 /* We need numbers of line to be visible till the bottom of the container, even
 if there are actually less lines. Therefore below number is added to get that
 done. */
   var extraLines = 100;
+/* Storing information about shift, alt and ctrl keys being down. */
+  var keyShiftDown = false;
+  var keyAltDown   = false;
+  var keyCtrlDown  = false;
+/* Keycodes */
+  var ALT   = 16;
+  var CTRL  = 17;
+  var SHIFT = 18;
+/* Ids of all jsNotepad instances on the page */
+  var instances = [];
 /* Helpers */
   function _pre(s) {
     return '<pre>'+jsHelper.encHtml(s)+'</pre>';
@@ -51,7 +68,14 @@ done. */
     return jsHelper.nu('div', {className: c, id: i, style: {position:'absolute',
              left: '0px', top: '0px' }});
   }
-
+/* Adds id to list of all jsNotepad instances */
+  function _addInstance(id) {
+    instances.push(id);
+  }
+/* Returns list of instance ids */
+  function _listInstances() {
+    return instances;
+  }
 /* Creates container element in an absolute position. */
   function _createContainer(o) {
     var id = o.id+_id_cont;
@@ -66,7 +90,7 @@ done. */
   function _createLineNumbers(o) {
     var id = o.id+_id_lnnums;
     var h = jsHelper(o).pos().h;
-    if ($(id).length() < 1) {
+    if (jsHelper(id).length() < 1) {
       var l = _nuDivPosAbsLeft0Top0(cls_lnnums, id);
       jsHelper(o).parent().append(l);
     } else {
@@ -79,7 +103,7 @@ done. */
 /* Creates element for every single line. */
   function _createLines(o) {
     var id = o.id+_id_lns, id_nums = o.id+_id_lnnums;
-    if ($(id).length() < 1) {
+    if (jsHelper(id).length() < 1) {
       var lns_obj = _nuDiv(cls_lns, id);
     /* Calculate number of lines by splitting the text with \n */
       var match = jsHelper(o).val().match(/\n/g),
@@ -111,8 +135,84 @@ done. */
     return lns_obj;
   };
 
+/* Creates char element. */
+  function _createChar(o) {
+    var id = o.id + _id_char;
+    if (jsHelper(id).length() < 1) {
+      var char_obj = jsHelper.nu('span', { className:cls_char, id:id,
+                                                        innerHTML: '&nbsp;' });
+      jsHelper(o.id+_id_cont).append(char_obj);
+    } else {
+      var char_obj = jsHelper.elById(id);
+    }
+    return char_obj;
+  };
+
+/* Creates element that will be the cursor. */
+  function _createCursor(o) {
+    var id = o.id+_id_cursor;
+    if (jsHelper(id).length() < 1) {
+      var char_coords = jsHelper(o.id+_id_char).pos();
+      var cursor_obj = jsHelper.nu('div',{ className:cls_cursor, 
+        id: o.id+_id_cursor, style: { height: char_coords.h+'px' }, 
+        innerHTML: '<textarea rows="1" id="'+o.id+_id_cursorinput+'"'
+                 + 'readonly="readonly"></textarea>' });
+      jsHelper(o.id+_id_cont).append(cursor_obj);
+      return cursor_obj;
+    } else {
+      return jsHelper.elById(id);
+    }
+  };
+
+/* Creates a layer on top of editor to handle blurring and focusing */
+  function _createBlur(o) {
+    var id = o.id+_id_blur;
+    var pos = jsHelper(o).pos();
+    if (jsHelper(id).length() < 1) {
+      var b = _nuDivPosAbsLeft0Top0(cls_blur, id);
+      var par = jsHelper(o).parent().style('position', 'relative').append(b);
+      jsHelper(id).style('zIndex', 5000);
+    } else {
+      return jsHelper.elById(id);
+    }
+    jsHelper(id).style('width', pos.w+'px').style('height', pos.h+'px');
+  }
+
+/* Handle alt, ctrl and shift keys */
+  function _attachKeysShiftCtrlAlt() {
+    jsHelper(window).on('blur', function(evt) {
+      keyShiftDown = false; keyAltDown = false; keyCtrlDown = false;
+    }).on('focus', function(evt) {
+      keyShiftDown = false; keyAltDown = false; keyCtrlDown = false;
+    }).on('keydown', function(evt) {
+      switch (evt.keyCode) {
+        case SHIFT: keyShiftDown = true; break;
+        case CTRL:  keyCtrlDown  = true; break;
+        case ALT:   keyAltDown   = true; break;
+        default: break;
+      }
+    }).on('keyup', function(evt) {
+      switch (evt.keyCode) {
+        case SHIFT: keyShiftDown = false; break;
+        case CTRL:  keyCtrlDown  = false; break;
+        case ALT:   keyAltDown   = false; break;
+        default: break;
+      }
+    });
+  }
+
+/* Attach all key events */
+  function _attachKeys(o) {
+    _attachKeysShiftCtrlAlt();
+    jsHelper(window).on('keypress', function(evt) {
+      if (keyAltDown || keyCtrlDown)
+        return null;
+    });
+    return true;
+  };
+
 /* Main initialization method. */
-  function init(id, o) {
+  function _init(id, o) {
     if (!jsHelper.elById(id)) {
       console.log('Element with id '+id+' not found.');
       return false;
@@ -121,12 +221,13 @@ done. */
     _createContainer(t);
     _createLineNumbers(t);
     _createLines(t);
-    /*_createSelection(id);
-    _createChar(id);
-    _createCursor(id);
+    /*_createSelection(id);*/
+    _createChar(t);
+    _createCursor(t);
+    _createBlur(t);
 
     _attachKeys(id);
-    _attachClick(id);
+    /*_attachClick(id);
     _attachScroll(id);
     _attachResize(id);
     setCursorPosition(0,0);
@@ -140,10 +241,20 @@ initialized. */
         turnEditModeOff();
       }
     }*/
+    _addInstance(id);
  };
  
+ function cmd(id, cmd, opts) {
+   switch (cmd) {
+     case 'init': _init(id, opts); break;
+     case 'list-instances': return _listInstances(); break;  
+     default: console.log('Invalid jsnotepad command'); return false; break;
+   }
+   return true;
+ }
+ 
  return {
-   init: init
+   cmd: cmd
  };
 
 })();
@@ -155,10 +266,6 @@ active (at least so far). Possible @todo is to make this an array so that text
 might be input in many windows. */
     var currentId         = '';
 
-/* Storing information about shift, alt and ctrl keys being down. */
-    var keyShiftDown      = false;
-    var keyAltDown        = false;
-    var keyCtrlDown       = false;
 
 /* Sometimes few char keys need to be pressed to perform an action. This var is
 to store all pressed keys so far. This var is probably mostly used in vim mode,
@@ -195,31 +302,6 @@ when the editor is initialized. */
         jsHelper(id+'_jsnotepad-container').append(sel_obj);
     }
 
-/* Creates char element. */
-    function _createChar(id) {
-        var char_obj = jsHelper.nu('span', {
-            className: 'jsnotepad-char',
-            id       : id + '_jsnotepad-char',
-            innerHTML: '&nbsp;'
-        });
-        jsHelper(document.body).append(char_obj);
-        return char_obj;
-    };
-
-/* Creates element that will be the cursor. */
-    function _createCursor(id) {
-        var char_coords = jsHelper(id+'_jsnotepad-char').pos();
-        var cursor_obj  = jsHelper.nu('div', {
-            className: 'jsnotepad-cursor',
-            id       : id+'_jsnotepad-cursor',
-            innerHTML:   '<textarea '
-                       + 'rows="1" '
-                       + 'id="'+id+'_jsnotepad-cursor-input"'
-                       + 'readonly="readonly"></textarea>',
-            style    : { height: char_coords.h+'px' }
-        });
-        jsHelper(document.body).append(cursor_obj);
-    };
 
 /* Attaches to resize event on the textarea. */
     function _attachResize(id) {
@@ -460,52 +542,6 @@ when the editor is initialized. */
         stopSelection();
         removeVisualSelection();
     }
-
-    function _attachKeys(id) {
-        // @scope?
-        jsHelper(document.body).on('keydown', function(evt) {
-            switch (evt.keyCode) {
-                case 16: keyShiftDown = true;  break;
-                case 18: keyAltDown   = true;  break;
-                case 17: keyCtrlDown  = true;  break;
-                default: break;
-            }
-        }).on('keyup', function(evt) {
-            switch (evt.keyCode) {
-                case 16: keyShiftDown = false; break;
-                case 18: keyAltDown   = false; break;
-                case 17: keyCtrlDown  = false; break;
-                default: break;
-            }
-        }).on('keypress', function(evt) {
-            if (keyAltDown || keyCtrlDown)
-                return null;
-
-    /* Preventing default behavior for arrow keys, backspace, delete and
-    enter. */
-        if (evt.keyCode == 37 || evt.keyCode == 39 || evt.keyCode == 38 ||
-            evt.keyCode == 40 || evt.keyCode == 8  || evt.keyCode == 46 ||
-            evt.keyCode == 13) {
-            evt.preventDefault();
-        }
-
-        /* Keys are handled different in vim mode. */
-            if (vimMode) {
-                _handleVimModeKeyEvent(evt);
-            } else {
-                _handleNormalModeKeyEvent(evt);
-            }
-        });
-        jsHelper(id+'_jsnotepad-cursor-input').on('keyup',function(evt) {
-            var id  = this.id.split('_')[0];
-            var val = this.value;
-            if (val != '') { 
-                // @scope?
-                insertText(val, id);
-            }
-            this.value = '';
-        });
-    };
 
 /* Sets cursor position to specified row and column. */
     function setCursorPosition(row, col, id) {
@@ -1205,24 +1241,26 @@ when the editor is initialized. */
     };
 });
 
-jshEl.prototype.notepad = function(opts) {
+jshEl.prototype.notepad = function(cmd, opts) {
   this.func(function(el) {
     if ($(el).attr('id') === null) {
       $(el).attr('id', $.uid());
     }
-    $.notepad('#'+$(el).attr('id'), opts);
+    jsHelper.notepad('#'+$(el).attr('id'), cmd, opts);
   });
 }
 
-jsHelper.notepad = function(src, opts) {
+jsHelper.notepad = function(src, cmd, opts) {
   if (src[0] == '#' && src.length > 1) {
     var id = src.substring(1);
-    if (jsHelper(id).length() != 1)
+    if (jsHelper(id).length() != 1) {
+      console.log('jsnotepad cannot be initialized - id does not exist');
       return false;
-    jsNotepad2.init(id, opts);
+    }
+    jsNotepad2.cmd(id, cmd, opts);
   }
 };
 
 if (typeof(JSHELPER_COMPATIBLE) == "undefined") {
-  $.notepad = function(src, opts) { jsHelper.notepad(src, opts); };
+  $.notepad = function(src, cmd, opts) { jsHelper.notepad(src, cmd, opts); };
 }

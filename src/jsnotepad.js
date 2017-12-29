@@ -52,13 +52,26 @@ done. */
   var keyAltDown   = false;
   var keyCtrlDown  = false;
 /* Keycodes */
-  var ALT   = 16;
-  var CTRL  = 17;
+  var ALT = 16;
+  var CTRL = 17;
   var SHIFT = 18;
+  var ENTER = 13;
+  var SPACE = 32;
+  var DELETE = 46;
+  var END = 35;
+  var HOME = 36;
+  var DOWN = 40;
+  var UP = 38;
+  var LEFT = 37;
+  var RIGHT = 39;
+  var BACKSPACE = 8;
+  var TAB = 9;
 /* Ids of all jsNotepad instances on the page */
   var instances = {};
-/* Marks whether handlers for key events on document.body are already added */
+/* Marks whether handlers for events on are already added */
   var keysAttached = false;
+  var instanceKeysAttached = {};
+  var instanceScrollAttached = {};
 /* Helpers */
   function _pre(s) {
     return '<pre>'+jsHelper.encHtml(s)+'</pre>';
@@ -124,6 +137,11 @@ done. */
         ln_nums = ln_nums+(ln_nums!=''?"\n":'')+(i+1);
       }
       jsHelper(id_nums).html(_pre(ln_nums));
+    /* Attach focus on the input once lines are clicked */
+      jsHelper(id).on('click', function() {
+        var id = this.id.split('_')[0];
+        jsHelper.elById(id+_id_cursorinput).focus();
+      });
     } else {
       var lns_obj = jsHelper.elById(id);
     }
@@ -191,6 +209,8 @@ done. */
     if (typeof(instances[id]) == 'undefined')
       return false;
     jsHelper(id+_id_blur).style('display', 'none');
+    jsHelper(id+_id_cursorinput).attr('readonly', null);
+    jsHelper.elById(id+_id_cursorinput).focus();
     instances[id] = 1;
     return true;
   }
@@ -240,15 +260,65 @@ done. */
   }
 
 /* Attach all key events */
-  function _attachKeys(o) {
+  function _attachKeys() {
     _attachKeysShiftCtrlAlt();
     jsHelper(window).on('keypress', function(evt) {
+      var f=false;
+      for (i in instances) {
+        if (instances[i] == 1)
+          f=true;
+      }
+      if (!f)
+        return null;
+      
       if (keyAltDown || keyCtrlDown)
         return null;
+      
+      if (evt.keyCode == UP || evt.keyCode == DOWN || evt.keyCode == LEFT ||
+          evt.keyCode == RIGHT || evt.keyCode == DELETE || evt.keyCode == END ||
+          evt.keyCode == ENTER || evt.keyCode == HOME || evt.keyCode == TAB) {
+          evt.preventDefault();
+      }
+
+    /* Basic cursor moves */
+      switch (evt.keyCode) {
+        case LEFT: _cmdOnAllActive('move-cursor-left'); break;
+        case RIGHT: _cmdOnAllActive('move-cursor-right', {'c': 1}); break;
+        case UP: _cmdOnAllActive('move-cursor-up'); break;
+        case DOWN: _cmdOnAllActive('move-cursor-down'); break;
+        case BACKSPACE: _cmdOnAllActive('remove-left-char'); break;
+        case DELETE: _cmdOnAllActive('remove-right-char'); break;
+        case ENTER: _cmdOnAllActive('new-line'); break;
+        case HOME: _cmdOnAllActive('move-cursor-begin'); break;
+        case END: _cmdOnAllActive('move-cursor-end'); break;
+        default: break;
+      }
     });
     keysAttached = true;
     return true;
   };
+
+  function _attachInstanceKeys(o) {
+    jsHelper(o.id+_id_cursorinput).on('keyup', function(evt) {
+      var id = this.id.split('_')[0];
+      var val = this.value;
+      if (val != '') {
+        jsNotepad2.cmd(id, 'insert-text', {'text': val});
+      }
+      this.value = '';
+    });
+    instanceKeysAttached[o.id] = 1;
+    return true;
+  }
+  
+  function _attachInstanceScroll(o) {
+    jsHelper(o.id+_id_lns).on('scroll', function() {
+      var id = this.id.split('_')[0];
+      // @scope?
+      //refreshCursorPosition(id);
+      jsHelper.elById(o.id+_id_lnnums).scrollTop = this.scrollTop;
+    });
+  }
 
 /* Main initialization method. */
   function _init(id, o) {
@@ -266,40 +336,73 @@ done. */
     _createBlur(t);
 
     if (!keysAttached) {
-      _attachKeys(id);
+      _attachKeys();
     }
-    /*_attachClick(id);
-    _attachScroll(id);
-    _attachResize(id);
-    setCursorPosition(0,0);
+    if (typeof(instanceKeysAttached[id]) == 'undefined') {
+      _attachInstanceKeys(t);
+    }
+    if (typeof(instanceScrollAttached[id]) == 'undefined') {
+      _attachInstanceScroll(t);
+    }
+    /* @todo Implement later_attachResize(id); */
+    _setCursorPosition(id, {'row': 0, 'col': 0});
 
-    turnEditModeOn();*/
-/* If vim mode is to be turned on then editing is unavailable when
-initialized. */
-    /*if (typeof(o) === 'object') {
-      if (typeof(o.vimMode) == 'boolean' && o.vimMode) {
-        vimMode = true;
-        turnEditModeOff();
-      }
-    }*/
     _addInstance(id);
- };
+  };
+
+  function _cmdOnAllActive(cmd, opts) {
+    for (i in instances) {
+      if (instances[i] == 1) {
+        if (typeof(opts) == 'undefined') {
+          opts = {};
+        }
+        opts['ignoreCheck'] = 1;
+        jsNotepad2.cmd(i, cmd, opts);
+      }
+    }
+  }
+
+  function cmd(id, cmd, opts) {
+    switch (cmd) {
+      case 'init': _init(id, opts); break;
+      case 'list-instances': return _listInstances(); break;
+      case 'set-all-inactive': return _setAllInactive(); break;
+      case 'set-active': return _setActive(id); break;
+      case 'set-inactive': return _setInactive(id); break;
+      default: break;
+    }
+    if (typeof(opts)=='object' && typeof(opts['ignoreCheck'])!='undefined') {
+    } else { 
+      var f=false;
+      for (i in instances) {
+        if (i == id) {
+          f = true;
+        }
+      }
+      if (!f) {
+        console.log('Invalid id');
+        return false;
+      }
+    }
+    switch (cmd) {
+      case 'set-cursor-position': _setCursorPosition(id, opts); break;
+      case 'move-cursor-up': _moveCursorUp(id); break;
+      case 'move-cursor-down': _moveCursorDown(id); break;
+      case 'move-cursor-right': _moveCursorRight(id, opts); break;
+      case 'move-cursor-left': _moveCursorLeft(id); break;
+      case 'remove-left-char': _removeLeftChar(id); break;
+      case 'remove-right-char': _removeRightChar(id); break;
+      case 'move-cursor-end': _moveCursorEnd(id); break;
+      case 'move-cursor-begin': _moveCursorBegin(id); break;
+      case 'new-line': _newLine(id); break;
+      case 'insert-text': _insertText(id, opts); break;
+    }
+    return true;
+  }
  
- function cmd(id, cmd, opts) {
-   switch (cmd) {
-     case 'init': _init(id, opts); break;
-     case 'list-instances': return _listInstances(); break;
-     case 'set-all-inactive': return _setAllInactive(); break;
-     case 'set-active': return _setActive(id); break;
-     case 'set-inactive': return _setInactive(id); break;
-     default: console.log('Invalid jsnotepad command'); return false; break;
-   }
-   return true;
- }
- 
- return {
-   cmd: cmd
- };
+  return {
+    cmd: cmd
+  };
 
 })();
 

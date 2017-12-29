@@ -56,7 +56,9 @@ done. */
   var CTRL  = 17;
   var SHIFT = 18;
 /* Ids of all jsNotepad instances on the page */
-  var instances = [];
+  var instances = {};
+/* Marks whether handlers for key events on document.body are already added */
+  var keysAttached = false;
 /* Helpers */
   function _pre(s) {
     return '<pre>'+jsHelper.encHtml(s)+'</pre>';
@@ -69,8 +71,8 @@ done. */
              left: '0px', top: '0px' }});
   }
 /* Adds id to list of all jsNotepad instances */
-  function _addInstance(id) {
-    instances.push(id);
+  function _addInstance(id, status) {
+    instances[id]=(typeof(status) == 'undefined'?0:1);
   }
 /* Returns list of instance ids */
   function _listInstances() {
@@ -168,22 +170,58 @@ done. */
   function _createBlur(o) {
     var id = o.id+_id_blur;
     var pos = jsHelper(o).pos();
+    var wasCreation = false;
     if (jsHelper(id).length() < 1) {
       var b = _nuDivPosAbsLeft0Top0(cls_blur, id);
       var par = jsHelper(o).parent().style('position', 'relative').append(b);
       jsHelper(id).style('zIndex', 5000);
-    } else {
-      return jsHelper.elById(id);
+      wasCreation = true;
     }
     jsHelper(id).style('width', pos.w+'px').style('height', pos.h+'px');
+    if (wasCreation) {
+      jsHelper(id).on('click', function() {
+        jsNotepad2.cmd('', 'set-all-inactive');
+        jsNotepad2.cmd(o.id, 'set-active');
+      });
+    }
+  }
+
+/* Activates jsnotepad instance */
+  function _setActive(id) {
+    if (typeof(instances[id]) == 'undefined')
+      return false;
+    jsHelper(id+_id_blur).style('display', 'none');
+    instances[id] = 1;
+    return true;
+  }
+
+/* Deactivates jsnotepad instance */
+  function _setInactive(id) {
+    if (typeof(instances[id]) == 'undefined')
+      return false;
+    jsHelper(id+_id_blur).style('display', 'block');
+    instances[id] = 0;
+    return true;
+  }
+
+/* Sets all jsnotepad instances inactive */
+  function _setAllInactive() {
+    for (o in instances) {
+      _setInactive(o);
+    }
+    return true;
   }
 
 /* Handle alt, ctrl and shift keys */
   function _attachKeysShiftCtrlAlt() {
+  /* When user leaves the window or comes back we reset the status of ctrl, alt
+     and shift */
     jsHelper(window).on('blur', function(evt) {
       keyShiftDown = false; keyAltDown = false; keyCtrlDown = false;
+      jsNotepad2.cmd('', 'set-all-inactive');
     }).on('focus', function(evt) {
       keyShiftDown = false; keyAltDown = false; keyCtrlDown = false;
+      jsNotepad2.cmd('', 'set-all-inactive');
     }).on('keydown', function(evt) {
       switch (evt.keyCode) {
         case SHIFT: keyShiftDown = true; break;
@@ -208,6 +246,7 @@ done. */
       if (keyAltDown || keyCtrlDown)
         return null;
     });
+    keysAttached = true;
     return true;
   };
 
@@ -226,7 +265,9 @@ done. */
     _createCursor(t);
     _createBlur(t);
 
-    _attachKeys(id);
+    if (!keysAttached) {
+      _attachKeys(id);
+    }
     /*_attachClick(id);
     _attachScroll(id);
     _attachResize(id);
@@ -247,7 +288,10 @@ initialized. */
  function cmd(id, cmd, opts) {
    switch (cmd) {
      case 'init': _init(id, opts); break;
-     case 'list-instances': return _listInstances(); break;  
+     case 'list-instances': return _listInstances(); break;
+     case 'set-all-inactive': return _setAllInactive(); break;
+     case 'set-active': return _setActive(id); break;
+     case 'set-inactive': return _setInactive(id); break;
      default: console.log('Invalid jsnotepad command'); return false; break;
    }
    return true;

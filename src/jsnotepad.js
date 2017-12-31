@@ -72,6 +72,8 @@ done. */
   var keysAttached = false;
   var instanceKeysAttached = {};
   var instanceScrollAttached = {};
+/* Cursor position */
+  var instanceCursors = {};
 /* Helpers */
   function _pre(s) {
     return '<pre>'+jsHelper.encHtml(s)+'</pre>';
@@ -87,6 +89,10 @@ done. */
   function _addInstance(id, status) {
     instances[id]=(typeof(status) == 'undefined'?0:1);
   }
+/* Add cursor position for instance */
+  function _addInstanceCursorPosition(id, row, col) {
+    instanceCursors[id] = {'row':row, 'col':col};
+  }
 /* Returns list of instance ids */
   function _listInstances() {
     return instances;
@@ -97,6 +103,9 @@ done. */
     if (jsHelper(id).length() == 1)
       return jsHelper.elById(id);
     var c = _nuDivPosAbsLeft0Top0(cls_cont, id);
+    var textarea_pos = jsHelper(o.id).pos();
+    jsHelper(c).style('overflow', 'hidden').style('width', textarea_pos.w+'px')
+                                          .style('height', textarea_pos.h+'px');
     var par = jsHelper(o).parent().style('position', 'relative').append(c);
     return c;
   };
@@ -107,7 +116,7 @@ done. */
     var h = jsHelper(o).pos().h;
     if (jsHelper(id).length() < 1) {
       var l = _nuDivPosAbsLeft0Top0(cls_lnnums, id);
-      jsHelper(o).parent().append(l);
+      jsHelper(o.id+_id_cont).append(l);
     } else {
       var l = jsHelper.elById(id);
     }
@@ -129,6 +138,8 @@ done. */
         lns_html = lns_html+_pre(jsHelper.encHtml(arr_lns[i])+' ');
       }
       jsHelper(lns_obj).html(lns_html);
+    /* Overwrite the scroll to 0, just in case browser caches something */
+      lns_obj.scrollTop = 0; lns_obj.scrollLeft = 0;
     /* Add lines object to the container*/
       jsHelper(o.id+_id_cont).append(lns_obj);
 
@@ -178,10 +189,18 @@ done. */
         innerHTML: '<textarea rows="1" id="'+o.id+_id_cursorinput+'"'
                  + 'readonly="readonly"></textarea>' });
       jsHelper(o.id+_id_cont).append(cursor_obj);
-      return cursor_obj;
-    } else {
-      return jsHelper.elById(id);
     }
+    var row = instanceCursors[o.id]['row'],
+        col = instanceCursors[o.id]['col'];
+    var lns_pos = jsHelper(o.id+_id_lns).pos();
+    var char_pos = jsHelper(o.id+_id_char).pos();
+    var scroll = _getScroll(o.id);
+    var l = lns_pos.l + (col*char_pos.w) - scroll.l;
+    var t = lns_pos.t + (row*char_pos.h) - scroll.t; 
+    jsHelper(id).style('zIndex', 2000).style('position', 'absolute')
+      .style('left', l+'px').style('top', t+'px');
+    jsHelper.elById(o.id+_id_cursorinput).focus();
+    return jsHelper.elById(id);
   };
 
 /* Creates a layer on top of editor to handle blurring and focusing */
@@ -315,9 +334,24 @@ done. */
     jsHelper(o.id+_id_lns).on('scroll', function() {
       var id = this.id.split('_')[0];
       // @scope?
-      //refreshCursorPosition(id);
+      _createCursor(jsHelper.elById(id));
       jsHelper.elById(o.id+_id_lnnums).scrollTop = this.scrollTop;
     });
+  }
+
+  function _getScroll(id) {
+    var lns = jsHelper.elById(id+_id_lns);
+    return { l: lns.scrollLeft, t: lns.scrollTop };
+  }
+
+  function _setCursorPosition(id, opts) {
+    if (typeof(opts['row']) != 'number' || typeof(opts['col']) != 'number')
+      return false;
+    if (!opts['row'].toString().match(/^[0-9]+$/)
+                                || !opts['col'].toString().match(/^[0-9]+$/))
+      return false;
+    _addInstanceCursorPosition(id, opts['row'], opts['col']);
+    _createCursor(jsHelper.elById(id));
   }
 
 /* Main initialization method. */
@@ -327,6 +361,7 @@ done. */
       return false;
     }
     var t = jsHelper.elById(id);
+    _addInstanceCursorPosition(id, 0, 0);
     _createContainer(t);
     _createLineNumbers(t);
     _createLines(t);
@@ -345,8 +380,6 @@ done. */
       _attachInstanceScroll(t);
     }
     /* @todo Implement later_attachResize(id); */
-    _setCursorPosition(id, {'row': 0, 'col': 0});
-
     _addInstance(id);
   };
 

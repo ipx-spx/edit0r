@@ -5,6 +5,10 @@
   font-family: courier;
   font-size: 12px;  
 }
+.jsnotepad pre {
+  font-family: courier;
+  font-size: 12px;
+}
 .jsnotepad-line-numbers {
   background: #222222;
   text-align: right;
@@ -12,7 +16,6 @@
   float: left;
   padding-right: 2px;
   overflow: hidden;
-  font-size: 12px;
 }
 .jsnotepad-line-numbers pre {
   margin: 0;
@@ -25,7 +28,6 @@
   padding: 0;
   overflow: scroll;
   z-index: 5000;
-  font-size: 12px;
 }
 .jsnotepad-lines pre {
   margin: 0;
@@ -38,7 +40,10 @@
 .jsnotepad-cursor {
   margin: 0;
   padding: 0;
-  border-left: solid 1px #ffffff;
+  border:0;
+  padding-left:1px;
+  background-color:#ffffff;
+  z-index: 5100;
 }
 .jsnotepad-char {
   margin: 0;
@@ -46,8 +51,6 @@
   background: none;
   opacity: 1;
   color: #ffffff;
-  font-family: courier;
-  font-size: 12px;
 }
 .jsnotepad-cursor textarea {
   margin: 0;
@@ -55,8 +58,6 @@
   border: 0;
   color: #eeeeee;
   background: none;
-  font-family: courier;
-  font-size: 12px;
   text-align: left;
   resize: none;
   width: 0;

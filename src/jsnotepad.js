@@ -145,9 +145,9 @@ done. */
 
     /* Generate line numbers. */
       for (var i=0; i<cnt_lns+extraLines; i++) {
-        ln_nums = ln_nums+(ln_nums!=''?"\n":'')+(i+1);
+        ln_nums = ln_nums+(ln_nums!=''?"\n":'')+_pre((i+1).toString());
       }
-      jsHelper(id_nums).html(_pre(ln_nums));
+      jsHelper(id_nums).html(ln_nums);
     /* Attach focus on the input once lines are clicked */
       jsHelper(id).on('click', function() {
         var id = this.id.split('_')[0];
@@ -197,7 +197,7 @@ done. */
     var scroll = _getScroll(o.id);
     var l = lns_pos.l + (col*char_pos.w) - scroll.l;
     var t = lns_pos.t + (row*char_pos.h) - scroll.t; 
-    jsHelper(id).style('zIndex', 2000).style('position', 'absolute')
+    jsHelper(id).style('position', 'absolute')
       .style('left', l+'px').style('top', t+'px');
     jsHelper.elById(o.id+_id_cursorinput).focus();
     return jsHelper.elById(id);
@@ -344,14 +344,46 @@ done. */
     return { l: lns.scrollLeft, t: lns.scrollTop };
   }
 
-  function _setCursorPosition(id, opts) {
-    if (typeof(opts['row']) != 'number' || typeof(opts['col']) != 'number')
+  function _getRowsCount(id) {
+    return jsHelper(id+_id_lns).children().filterTag('pre').length();
+  }
+  
+  function _getLineColsCount(id, row) {
+    var h = jsHelper(id+_id_lns).children().filterTag('pre').nth(row+1).html();
+    h = h.replace(/<span[a-zA-Z0-9 ="_\-]*>/g,'').replace(/<\/span>/g,'');
+    h = jsHelper.decHtml(h);
+    return h.length-1;
+  }
+
+  function _setCursorPosition(id, row, col) {
+    if (typeof(row) != 'number' || typeof(col) != 'number')
       return false;
-    if (!opts['row'].toString().match(/^[0-9]+$/)
-                                || !opts['col'].toString().match(/^[0-9]+$/))
+    if (!row.toString().match(/^[0-9]+$/) || !col.toString().match(/^[0-9]+$/))
       return false;
-    _addInstanceCursorPosition(id, opts['row'], opts['col']);
+    _addInstanceCursorPosition(id, row, col);
     _createCursor(jsHelper.elById(id));
+  }
+
+  function _getCursorPosition(id) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    return {'row':instanceCursors[id]['row'],'col':instanceCursors[id]['col']}
+  }
+
+  function _moveCursorDown(id) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    var pos = _getCursorPosition(id);
+    var rows = _getRowsCount(id); 
+    if (pos.row < (rows-1)) {
+      var next_line_cols = _getLineColsCount(id, pos.row + 1);
+      if (next_line_cols < pos.col) {
+        var col = next_line_cols;
+      } else {
+        var col = pos.col;
+      }
+      _setCursorPosition(id, pos.row + 1, col);
+    }
   }
 
 /* Main initialization method. */
@@ -418,7 +450,9 @@ done. */
       }
     }
     switch (cmd) {
-      case 'set-cursor-position': _setCursorPosition(id, opts); break;
+      case 'set-cursor-position': 
+        _setCursorPosition(id, opts['row'], opts['col']); 
+        break;
       case 'move-cursor-up': _moveCursorUp(id); break;
       case 'move-cursor-down': _moveCursorDown(id); break;
       case 'move-cursor-right': _moveCursorRight(id, opts); break;

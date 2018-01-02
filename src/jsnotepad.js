@@ -360,6 +360,12 @@ done. */
       return false;
     if (!row.toString().match(/^[0-9]+$/) || !col.toString().match(/^[0-9]+$/))
       return false;
+    var rows = _getRowsCount(id);
+    if (row >= rows)
+      return false;
+    var cols = _getLineColsCount(id, row);
+    if (col > cols)
+      return false;
     _addInstanceCursorPosition(id, row, col);
     _createCursor(jsHelper.elById(id));
   }
@@ -368,6 +374,21 @@ done. */
     if (typeof(instanceCursors[id]) == 'undefined')
       return false;
     return {'row':instanceCursors[id]['row'],'col':instanceCursors[id]['col']}
+  }
+  
+  function _moveCursorUp(id) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    var pos = _getCursorPosition(id);
+    if (pos.row > 0) {
+      var prev_line_cols = _getLineColsCount(id, pos.row-1);
+      if (prev_line_cols < pos.col) {
+        var col = prev_line_cols;
+      } else {
+        var col = pos.col;
+      }
+      _setCursorPosition(id, pos.row-1, col);
+    }
   }
 
   function _moveCursorDown(id) {

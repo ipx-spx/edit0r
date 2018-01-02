@@ -308,7 +308,7 @@ done. */
         case BACKSPACE: _cmdOnAllActive('remove-left-char'); break;
         case DELETE: _cmdOnAllActive('remove-right-char'); break;
         case ENTER: _cmdOnAllActive('new-line'); break;
-        case HOME: _cmdOnAllActive('move-cursor-begin'); break;
+        case HOME: _cmdOnAllActive('move-cursor-home'); break;
         case END: _cmdOnAllActive('move-cursor-end'); break;
         default: break;
       }
@@ -428,6 +428,21 @@ done. */
       _setCursorPosition(id, pos.row, pos.col+cnt);
     }
   }
+  
+  function _moveCursorHome(id) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    var pos = _getCursorPosition(id);
+    _setCursorPosition(id, pos.row, 0);
+  }
+  
+  function _moveCursorEnd(id) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    var pos = _getCursorPosition(id);
+    var line_cols = _getLineColsCount(id, pos.row);
+    _setCursorPosition(id, pos.row, line_cols);
+  }
 
 /* Main initialization method. */
   function _init(id, o) {
@@ -503,7 +518,7 @@ done. */
       case 'remove-left-char': _removeLeftChar(id); break;
       case 'remove-right-char': _removeRightChar(id); break;
       case 'move-cursor-end': _moveCursorEnd(id); break;
-      case 'move-cursor-begin': _moveCursorBegin(id); break;
+      case 'move-cursor-home': _moveCursorHome(id); break;
       case 'new-line': _newLine(id); break;
       case 'insert-text': _insertText(id, opts); break;
     }

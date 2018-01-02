@@ -407,6 +407,28 @@ done. */
     }
   }
 
+  function _moveCursorLeft(id) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    var pos = _getCursorPosition(id);
+    if (pos.col > 0) {
+      _setCursorPosition(id, pos.row, pos.col-1);
+    }
+  }
+
+  function _moveCursorRight(id, cnt) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    if (typeof(cnt) != 'number') {
+      cnt = 1;
+    }
+    var pos = _getCursorPosition(id);
+    var line_cols = _getLineColsCount(id, pos.row);
+    if (pos.col+cnt <= line_cols) {
+      _setCursorPosition(id, pos.row, pos.col+cnt);
+    }
+  }
+
 /* Main initialization method. */
   function _init(id, o) {
     if (!jsHelper.elById(id)) {
@@ -476,7 +498,7 @@ done. */
         break;
       case 'move-cursor-up': _moveCursorUp(id); break;
       case 'move-cursor-down': _moveCursorDown(id); break;
-      case 'move-cursor-right': _moveCursorRight(id, opts); break;
+      case 'move-cursor-right': _moveCursorRight(id, opts['cnt']); break;
       case 'move-cursor-left': _moveCursorLeft(id); break;
       case 'remove-left-char': _removeLeftChar(id); break;
       case 'remove-right-char': _removeRightChar(id); break;

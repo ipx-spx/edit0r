@@ -469,6 +469,19 @@ done. */
         jsHelper.elById(id+_id_lns).scrollLeft -= minus;
       }
     }
+    
+    var diff_v = cur_pos.t - cont_pos.h;
+    if (diff_v+(3*char_pos.h)>0) {
+      jsHelper.elById(id+_id_lns).scrollTop 
+                = jsHelper.elById(id+_id_lns).scrollTop+diff_v+(2*char_pos.h);
+    }
+    if (diff_v < 0) {
+      diff_v = -1*diff_v;
+      if (diff_v > cont_pos.h) {
+        var minus = (diff_v-cont_pos.h);
+        jsHelper.elById(id+_id_lns).scrollTop -= minus;
+      }
+    }
   }
 
 /* Main initialization method. */

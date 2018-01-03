@@ -388,6 +388,7 @@ done. */
         var col = pos.col;
       }
       _setCursorPosition(id, pos.row-1, col);
+      _scrollIfCursorNotVisible(id);
     }
   }
 
@@ -404,6 +405,7 @@ done. */
         var col = pos.col;
       }
       _setCursorPosition(id, pos.row + 1, col);
+      _scrollIfCursorNotVisible(id);
     }
   }
 
@@ -413,6 +415,7 @@ done. */
     var pos = _getCursorPosition(id);
     if (pos.col > 0) {
       _setCursorPosition(id, pos.row, pos.col-1);
+      _scrollIfCursorNotVisible(id);
     }
   }
 
@@ -426,6 +429,7 @@ done. */
     var line_cols = _getLineColsCount(id, pos.row);
     if (pos.col+cnt <= line_cols) {
       _setCursorPosition(id, pos.row, pos.col+cnt);
+      _scrollIfCursorNotVisible(id);
     }
   }
   
@@ -434,6 +438,7 @@ done. */
       return false;
     var pos = _getCursorPosition(id);
     _setCursorPosition(id, pos.row, 0);
+    _scrollIfCursorNotVisible(id);
   }
   
   function _moveCursorEnd(id) {
@@ -442,6 +447,28 @@ done. */
     var pos = _getCursorPosition(id);
     var line_cols = _getLineColsCount(id, pos.row);
     _setCursorPosition(id, pos.row, line_cols);
+    _scrollIfCursorNotVisible(id);
+  }
+  
+  function _scrollIfCursorNotVisible(id) {
+    var cont_pos = jsHelper(id+_id_cont).pos();
+    var lns_scroll = _getScroll(id);
+    var cur_pos = jsHelper(id+_id_cursor).pos();
+    var char_pos = jsHelper(id+_id_char).pos();
+    
+    var diff_h = cur_pos.l - cont_pos.w;
+    var lnnums_pos = jsHelper(id+_id_lnnums).pos();
+    if (diff_h+(3*char_pos.w)>0) {
+      jsHelper.elById(id+_id_lns).scrollLeft 
+                = jsHelper.elById(id+_id_lns).scrollLeft+diff_h+(2*char_pos.w);
+    }
+    if (diff_h < 0) {
+      diff_h = -1*diff_h;
+      if (diff_h+lnnums_pos.w > cont_pos.w) {
+        var minus = (diff_h-cont_pos.w+lnnums_pos.w+(2*char_pos.w));
+        jsHelper.elById(id+_id_lns).scrollLeft -= minus;
+      }
+    }
   }
 
 /* Main initialization method. */

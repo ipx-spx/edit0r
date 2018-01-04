@@ -66,6 +66,8 @@ done. */
   var RIGHT = 39;
   var BACKSPACE = 8;
   var TAB = 9;
+  var PAGEUP = 33;
+  var PAGEDOWN = 34;
 /* Ids of all jsNotepad instances on the page */
   var instances = {};
 /* Marks whether handlers for events on are already added */
@@ -295,7 +297,8 @@ done. */
       
       if (evt.keyCode == UP || evt.keyCode == DOWN || evt.keyCode == LEFT ||
           evt.keyCode == RIGHT || evt.keyCode == DELETE || evt.keyCode == END ||
-          evt.keyCode == ENTER || evt.keyCode == HOME || evt.keyCode == TAB) {
+          evt.keyCode == ENTER || evt.keyCode == HOME || evt.keyCode == TAB ||
+          evt.keyCode == PAGEUP || evt.keyCode == PAGEDOWN) {
           evt.preventDefault();
       }
 
@@ -305,11 +308,14 @@ done. */
         case RIGHT: _cmdOnAllActive('move-cursor-right', {'c': 1}); break;
         case UP: _cmdOnAllActive('move-cursor-up'); break;
         case DOWN: _cmdOnAllActive('move-cursor-down'); break;
+        case HOME: _cmdOnAllActive('move-cursor-home'); break;
+        case END: _cmdOnAllActive('move-cursor-end'); break;
+        case PAGEUP: _cmdOnAllActive('move-cursor-page-up'); break;
+        case PAGEDOWN: _cmdOnAllActive('move-cursor-page-down'); break;
+
         case BACKSPACE: _cmdOnAllActive('remove-left-char'); break;
         case DELETE: _cmdOnAllActive('remove-right-char'); break;
         case ENTER: _cmdOnAllActive('new-line'); break;
-        case HOME: _cmdOnAllActive('move-cursor-home'); break;
-        case END: _cmdOnAllActive('move-cursor-end'); break;
         default: break;
       }
     });
@@ -346,6 +352,12 @@ done. */
 
   function _getRowsCount(id) {
     return jsHelper(id+_id_lns).children().filterTag('pre').length();
+  }
+  
+  function _getPageRowsCount(id) {
+    var char_pos = jsHelper(id+_id_char).pos();
+    var lns_pos = jsHelper(id+_id_lns).pos();
+    return Math.floor(lns_pos.h/char_pos.h);
   }
   
   function _getLineColsCount(id, row) {
@@ -447,6 +459,33 @@ done. */
     var pos = _getCursorPosition(id);
     var line_cols = _getLineColsCount(id, pos.row);
     _setCursorPosition(id, pos.row, line_cols);
+    _scrollIfCursorNotVisible(id);
+  }
+  
+  function _moveCursorPageUp(id) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    var pos = _getCursorPosition(id);
+    var page_rows = _getPageRowsCount(id);
+    var new_row = pos.row - page_rows + 1;
+    if (new_row < 0) {
+      new_row = 0;
+    }
+    _setCursorPosition(id, new_row, pos.col);
+    _scrollIfCursorNotVisible(id);
+  }
+  
+  function _moveCursorPageDown(id) {
+    if (typeof(instanceCursors[id]) == 'undefined')
+      return false;
+    var pos = _getCursorPosition(id);
+    var page_rows = _getPageRowsCount(id);
+    var rows = _getRowsCount(id);
+    var new_row = pos.row + page_rows - 1;
+    if (new_row > (rows-1)) {
+      new_row = rows-1;
+    }
+    _setCursorPosition(id, new_row, pos.col);
     _scrollIfCursorNotVisible(id);
   }
   
@@ -555,10 +594,12 @@ done. */
       case 'move-cursor-down': _moveCursorDown(id); break;
       case 'move-cursor-right': _moveCursorRight(id, opts['cnt']); break;
       case 'move-cursor-left': _moveCursorLeft(id); break;
-      case 'remove-left-char': _removeLeftChar(id); break;
-      case 'remove-right-char': _removeRightChar(id); break;
       case 'move-cursor-end': _moveCursorEnd(id); break;
       case 'move-cursor-home': _moveCursorHome(id); break;
+      case 'move-cursor-page-up': _moveCursorPageUp(id); break;
+      case 'move-cursor-page-down': _moveCursorPageDown(id); break;
+      case 'remove-left-char': _removeLeftChar(id); break;
+      case 'remove-right-char': _removeRightChar(id); break;
       case 'new-line': _newLine(id); break;
       case 'insert-text': _insertText(id, opts); break;
     }

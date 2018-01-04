@@ -388,12 +388,7 @@ done. */
   function _moveCursorUp(id) {
     var pos = _getCursorPosition(id);
     if (pos.row > 0) {
-      var prev_line_cols = _getLineColsCount(id, pos.row-1);
-      if (prev_line_cols < pos.col) {
-        var col = prev_line_cols;
-      } else {
-        var col = pos.col;
-      }
+      var col = _maxRowCol(id, pos.row-1, pos.col);
       _setCursorPosition(id, pos.row-1, col);
       _scrollIfCursorNotVisible(id);
     }
@@ -403,12 +398,8 @@ done. */
     var pos = _getCursorPosition(id);
     var rows = _getRowsCount(id); 
     if (pos.row < (rows-1)) {
+      var col = _maxRowCol(id, pos.row+1, pos.col);
       var next_line_cols = _getLineColsCount(id, pos.row + 1);
-      if (next_line_cols < pos.col) {
-        var col = next_line_cols;
-      } else {
-        var col = pos.col;
-      }
       _setCursorPosition(id, pos.row + 1, col);
       _scrollIfCursorNotVisible(id);
     }
@@ -450,16 +441,8 @@ done. */
   function _moveCursorPageUp(id) {
     var pos = _getCursorPosition(id);
     var page_rows = _getPageRowsCount(id);
-    var row = pos.row - page_rows + 1;
-    if (row < 0) {
-      row = 0;
-    }
-    var row_cols = _getLineColsCount(id, row);
-    if (row_cols < pos.col) {
-      var col = row_cols;
-    } else {
-      var col = pos.col;
-    }
+    var row = _minFirstRow(id, pos.row - page_rows + 1);
+    var col = _maxRowCol(id, row, pos.col);
     _setCursorPosition(id, row, col);
     _scrollIfCursorNotVisible(id);
   }
@@ -467,19 +450,33 @@ done. */
   function _moveCursorPageDown(id) {
     var pos = _getCursorPosition(id);
     var page_rows = _getPageRowsCount(id);
+    var row = _maxLastRow(id, pos.row + page_rows - 1);
+    var col = _maxRowCol(id, row, pos.col);
+    _setCursorPosition(id, row, col);
+    _scrollIfCursorNotVisible(id);
+  }
+  
+  function _minFirstRow(id, row) {
+    if (row < 0) {
+      row = 0;
+    }
+    return row;
+  }
+  
+  function _maxLastRow(id, row) {
     var rows = _getRowsCount(id);
-    var row = pos.row + page_rows - 1;
     if (row > (rows-1)) {
       row = rows-1;
     }
+    return row;
+  }
+  
+  function _maxRowCol(id, row, col) {
     var row_cols = _getLineColsCount(id, row);
-    if (row_cols < pos.col) {
-      var col = row_cols;
-    } else {
-      var col = pos.col;
+    if (row_cols < col) {
+      col = row_cols;
     }
-    _setCursorPosition(id, row, col);
-    _scrollIfCursorNotVisible(id);
+    return col;
   }
   
   function _scrollIfCursorNotVisible(id) {

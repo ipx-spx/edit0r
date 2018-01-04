@@ -68,14 +68,11 @@ done. */
   var TAB = 9;
   var PAGEUP = 33;
   var PAGEDOWN = 34;
-/* Ids of all jsNotepad instances on the page */
+/* Ids of all jsNotepad instances on the page (with some details). See creating
+   instance function. */
   var instances = {};
 /* Marks whether handlers for events on are already added */
   var keysAttached = false;
-  var instanceKeysAttached = {};
-  var instanceScrollAttached = {};
-/* Cursor position */
-  var instanceCursors = {};
 /* Helpers */
   function _pre(s) {
     return '<pre>'+jsHelper.encHtml(s)+'</pre>';
@@ -89,11 +86,16 @@ done. */
   }
 /* Adds id to list of all jsNotepad instances */
   function _addInstance(id, status) {
-    instances[id]=(typeof(status) == 'undefined'?0:1);
+    instances[id] = {
+      'active': (typeof(status) == 'undefined' ? false : status),
+      'keysAttached': false,
+      'scrollAttached': false,
+      'cursorPosition': [0, 0]
+    };
   }
 /* Add cursor position for instance */
   function _addInstanceCursorPosition(id, row, col) {
-    instanceCursors[id] = {'row':row, 'col':col};
+    instances[id]['cursorPosition'] = [row, col];
   }
 /* Returns list of instance ids */
   function _listInstances() {
@@ -192,8 +194,8 @@ done. */
                  + 'readonly="readonly"></textarea>' });
       jsHelper(o.id+_id_cont).append(cursor_obj);
     }
-    var row = instanceCursors[o.id]['row'],
-        col = instanceCursors[o.id]['col'];
+    var row = instances[o.id]['cursorPosition'][0],
+        col = instances[o.id]['cursorPosition'][1];
     var lns_pos = jsHelper(o.id+_id_lns).pos();
     var char_pos = jsHelper(o.id+_id_char).pos();
     var scroll = _getScroll(o.id);
@@ -227,21 +229,17 @@ done. */
 
 /* Activates jsnotepad instance */
   function _setActive(id) {
-    if (typeof(instances[id]) == 'undefined')
-      return false;
     jsHelper(id+_id_blur).style('display', 'none');
     jsHelper(id+_id_cursorinput).attr('readonly', null);
     jsHelper.elById(id+_id_cursorinput).focus();
-    instances[id] = 1;
+    instances[id]['active'] = true;
     return true;
   }
 
 /* Deactivates jsnotepad instance */
   function _setInactive(id) {
-    if (typeof(instances[id]) == 'undefined')
-      return false;
     jsHelper(id+_id_blur).style('display', 'block');
-    instances[id] = 0;
+    instances[id]['active'] = false;
     return true;
   }
 
@@ -286,7 +284,7 @@ done. */
     jsHelper(window).on('keypress', function(evt) {
       var f=false;
       for (i in instances) {
-        if (instances[i] == 1)
+        if (instances[i]['active'])
           f=true;
       }
       if (!f)
@@ -332,7 +330,7 @@ done. */
       }
       this.value = '';
     });
-    instanceKeysAttached[o.id] = 1;
+    instances[o.id]['keysAttached'] = true;
     return true;
   }
   
@@ -383,14 +381,11 @@ done. */
   }
 
   function _getCursorPosition(id) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
-    return {'row':instanceCursors[id]['row'],'col':instanceCursors[id]['col']}
+    return { 'row': instances[id]['cursorPosition'][0],
+                                    'col': instances[id]['cursorPosition'][1] }
   }
   
   function _moveCursorUp(id) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
     var pos = _getCursorPosition(id);
     if (pos.row > 0) {
       var prev_line_cols = _getLineColsCount(id, pos.row-1);
@@ -405,8 +400,6 @@ done. */
   }
 
   function _moveCursorDown(id) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
     var pos = _getCursorPosition(id);
     var rows = _getRowsCount(id); 
     if (pos.row < (rows-1)) {
@@ -422,8 +415,6 @@ done. */
   }
 
   function _moveCursorLeft(id) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
     var pos = _getCursorPosition(id);
     if (pos.col > 0) {
       _setCursorPosition(id, pos.row, pos.col-1);
@@ -432,8 +423,6 @@ done. */
   }
 
   function _moveCursorRight(id, cnt) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
     if (typeof(cnt) != 'number') {
       cnt = 1;
     }
@@ -446,16 +435,12 @@ done. */
   }
   
   function _moveCursorHome(id) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
     var pos = _getCursorPosition(id);
     _setCursorPosition(id, pos.row, 0);
     _scrollIfCursorNotVisible(id);
   }
   
   function _moveCursorEnd(id) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
     var pos = _getCursorPosition(id);
     var line_cols = _getLineColsCount(id, pos.row);
     _setCursorPosition(id, pos.row, line_cols);
@@ -463,29 +448,37 @@ done. */
   }
   
   function _moveCursorPageUp(id) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
     var pos = _getCursorPosition(id);
     var page_rows = _getPageRowsCount(id);
-    var new_row = pos.row - page_rows + 1;
-    if (new_row < 0) {
-      new_row = 0;
+    var row = pos.row - page_rows + 1;
+    if (row < 0) {
+      row = 0;
     }
-    _setCursorPosition(id, new_row, pos.col);
+    var row_cols = _getLineColsCount(id, row);
+    if (row_cols < pos.col) {
+      var col = row_cols;
+    } else {
+      var col = pos.col;
+    }
+    _setCursorPosition(id, row, col);
     _scrollIfCursorNotVisible(id);
   }
   
   function _moveCursorPageDown(id) {
-    if (typeof(instanceCursors[id]) == 'undefined')
-      return false;
     var pos = _getCursorPosition(id);
     var page_rows = _getPageRowsCount(id);
     var rows = _getRowsCount(id);
-    var new_row = pos.row + page_rows - 1;
-    if (new_row > (rows-1)) {
-      new_row = rows-1;
+    var row = pos.row + page_rows - 1;
+    if (row > (rows-1)) {
+      row = rows-1;
     }
-    _setCursorPosition(id, new_row, pos.col);
+    var row_cols = _getLineColsCount(id, row);
+    if (row_cols < pos.col) {
+      var col = row_cols;
+    } else {
+      var col = pos.col;
+    }
+    _setCursorPosition(id, row, col);
     _scrollIfCursorNotVisible(id);
   }
   
@@ -529,6 +522,7 @@ done. */
       console.log('Element with id '+id+' not found.');
       return false;
     }
+    _addInstance(id);
     var t = jsHelper.elById(id);
     _addInstanceCursorPosition(id, 0, 0);
     _createContainer(t);
@@ -542,19 +536,18 @@ done. */
     if (!keysAttached) {
       _attachKeys();
     }
-    if (typeof(instanceKeysAttached[id]) == 'undefined') {
+    if (!instances[id]['keysAttached']) {
       _attachInstanceKeys(t);
     }
-    if (typeof(instanceScrollAttached[id]) == 'undefined') {
+    if (!instances[id]['scrollAttached']) {
       _attachInstanceScroll(t);
     }
     /* @todo Implement later_attachResize(id); */
-    _addInstance(id);
   };
 
   function _cmdOnAllActive(cmd, opts) {
     for (i in instances) {
-      if (instances[i] == 1) {
+      if (instances[i]['active']) {
         if (typeof(opts) == 'undefined') {
           opts = {};
         }
@@ -569,8 +562,6 @@ done. */
       case 'init': _init(id, opts); break;
       case 'list-instances': return _listInstances(); break;
       case 'set-all-inactive': return _setAllInactive(); break;
-      case 'set-active': return _setActive(id); break;
-      case 'set-inactive': return _setInactive(id); break;
       default: break;
     }
     if (typeof(opts)=='object' && typeof(opts['ignoreCheck'])!='undefined') {
@@ -587,6 +578,8 @@ done. */
       }
     }
     switch (cmd) {
+      case 'set-active': return _setActive(id); break;
+      case 'set-inactive': return _setInactive(id); break;
       case 'set-cursor-position': 
         _setCursorPosition(id, opts['row'], opts['col']); 
         break;

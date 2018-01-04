@@ -85,9 +85,11 @@ done. */
              left: '0px', top: '0px' }});
   }
 /* Adds id to list of all jsNotepad instances */
-  function _addInstance(id, status) {
+  function _addInstance(id, active, mode, input) {
     instances[id] = {
-      'active': (typeof(status) == 'undefined' ? false : status),
+      'active': (typeof(active) == 'undefined' ? false : status),
+      'mode': (typeof(mode) == 'undefined' ? 'edit' : mode),
+      'input': (typeof(input) == 'undefined' ? 'default' : input),
       'keysAttached': false,
       'scrollAttached': false,
       'cursorPosition': [0, 0]

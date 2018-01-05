@@ -514,8 +514,17 @@ done. */
   }
   
   function _removeLine(id, line) {
-    jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).rm();
-    jsHelper(id+_id_lnnums).children().filterTag('pre').nth(line+1).rm();
+    if (_getLineColsCount(id) > 1) {
+      jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).rm();
+      jsHelper(id+_id_lnnums).children().filterTag('pre').nth(line+1).rm();
+    } else if (line == 0) {
+      _replaceLine(id, line, '');
+    }
+  }
+  
+  function _removeCurLine(id) {
+    var pos = _getCursorPosition(id);
+    _removeLine(id, pos.line); 
   }
   
   function _minFirstLine(id, line) {
@@ -576,13 +585,20 @@ done. */
   }
   
   function _insertLine(id, line, val) {
-    jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).func(
-      function(el) {
-        var new_line = jsHelper.nu('pre');
-        jsHelper(new_line).html(jsHelper.encHtml(val)+' ');
-        el.parentNode.insertBefore(new_line, el);
-      }
-    );
+    var lines_cnt = _getLinesCount(id);
+    if (line == lines_cnt) {
+      var new_line = jsHelper.nu('pre');
+      jsHelper(new_line).html(jsHelper.encHtml(val)+' ');
+      jsHelper(id+_id_lns).append(new_line);
+    } else {
+      jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).func(
+        function(el) {
+          var new_line = jsHelper.nu('pre');
+          jsHelper(new_line).html(jsHelper.encHtml(val)+' ');
+          el.parentNode.insertBefore(new_line, el);
+        }
+      );
+    }
   }
   
   function _insertNewLine(id) {
@@ -601,7 +617,7 @@ done. */
     var n = jsHelper(id+_id_lnnums).children('pre').length();
     n++;
     var pre = jsHelper.nu('pre');
-    jsHelper(pre).html(_pre(n.toString()));
+    jsHelper(pre).html(n.toString());
     jsHelper(id+_id_lnnums).append(pre);
   }
 
@@ -682,6 +698,7 @@ done. */
       case 'move-cursor-page-down': _moveCursorPageDown(id); break;
       case 'remove-left-char': _removeLeftChar(id); break;
       case 'remove-right-char': _removeRightChar(id); break;
+      case 'remove-line': _removeCurLine(id); break;
       case 'new-line': _insertNewLine(id); break;
       case 'insert-text': _insertText(id, opts); break;
     }

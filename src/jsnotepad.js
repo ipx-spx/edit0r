@@ -84,7 +84,7 @@ done. */
     return jsHelper.nu('div', {className: c, id: i, style: {position:'absolute',
              left: '0px', top: '0px' }});
   }
-/* Adds id to list of all jsNotepad instances */
+
   function _addInstance(id, active, mode, input) {
     instances[id] = {
       'active': (typeof(active) == 'undefined' ? false : status),
@@ -95,11 +95,11 @@ done. */
       'cursorPosition': [0, 0]
     };
   }
-/* Add cursor position for instance */
-  function _addInstanceCursorPosition(id, row, col) {
-    instances[id]['cursorPosition'] = [row, col];
+
+  function _addInstanceCursorPosition(id, line, col) {
+    instances[id]['cursorPosition'] = [line, col];
   }
-/* Returns list of instance ids */
+
   function _listInstances() {
     return instances;
   }
@@ -196,13 +196,13 @@ done. */
                  + 'readonly="readonly"></textarea>' });
       jsHelper(o.id+_id_cont).append(cursor_obj);
     }
-    var row = instances[o.id]['cursorPosition'][0],
+    var line = instances[o.id]['cursorPosition'][0],
         col = instances[o.id]['cursorPosition'][1];
     var lns_pos = jsHelper(o.id+_id_lns).pos();
     var char_pos = jsHelper(o.id+_id_char).pos();
     var scroll = _getScroll(o.id);
     var l = lns_pos.l + (col*char_pos.w) - scroll.l;
-    var t = lns_pos.t + (row*char_pos.h) - scroll.t; 
+    var t = lns_pos.t + (line*char_pos.h) - scroll.t; 
     jsHelper(id).style('position', 'absolute')
       .style('left', l+'px').style('top', t+'px');
     jsHelper.elById(o.id+_id_cursorinput).focus();
@@ -350,59 +350,60 @@ done. */
     return { l: lns.scrollLeft, t: lns.scrollTop };
   }
 
-  function _getRowsCount(id) {
+  function _getLinesCount(id) {
     return jsHelper(id+_id_lns).children().filterTag('pre').length();
   }
   
-  function _getPageRowsCount(id) {
+  function _getPageLinesCount(id) {
     var char_pos = jsHelper(id+_id_char).pos();
     var lns_pos = jsHelper(id+_id_lns).pos();
     return Math.floor(lns_pos.h/char_pos.h);
   }
   
-  function _getLineColsCount(id, row) {
-    var h = jsHelper(id+_id_lns).children().filterTag('pre').nth(row+1).html();
+  function _getLineColsCount(id, line) {
+    var h = jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).html();
     h = h.replace(/<span[a-zA-Z0-9 ="_\-]*>/g,'').replace(/<\/span>/g,'');
     h = jsHelper.decHtml(h);
+  /* There's extra space at the end */
     return h.length-1;
   }
 
-  function _setCursorPosition(id, row, col) {
-    if (typeof(row) != 'number' || typeof(col) != 'number')
+  function _setCursorPosition(id, line, col) {
+    if (typeof(line) != 'number' || typeof(col) != 'number')
       return false;
-    if (!row.toString().match(/^[0-9]+$/) || !col.toString().match(/^[0-9]+$/))
+    if (!line.toString().match(/^[0-9]+$/) || !col.toString().match(/^[0-9]+$/))
       return false;
-    var rows = _getRowsCount(id);
-    if (row >= rows)
+    var lines = _getLinesCount(id);
+    if (line >= lines)
       return false;
-    var cols = _getLineColsCount(id, row);
+    var cols = _getLineColsCount(id, line);
     if (col > cols)
       return false;
-    _addInstanceCursorPosition(id, row, col);
+    _addInstanceCursorPosition(id, line, col);
     _createCursor(jsHelper.elById(id));
   }
 
   function _getCursorPosition(id) {
-    return { 'row': instances[id]['cursorPosition'][0],
+    return { 'line': instances[id]['cursorPosition'][0],
                                     'col': instances[id]['cursorPosition'][1] }
   }
   
   function _moveCursorUp(id) {
     var pos = _getCursorPosition(id);
-    if (pos.row > 0) {
-      var col = _maxRowCol(id, pos.row-1, pos.col);
-      _setCursorPosition(id, pos.row-1, col);
+    if (pos.line > 0) {
+      var col = _maxLineCol(id, pos.line-1, pos.col);
+      _setCursorPosition(id, pos.line-1, col);
       _scrollIfCursorNotVisible(id);
     }
   }
 
   function _moveCursorDown(id) {
     var pos = _getCursorPosition(id);
-    var rows = _getRowsCount(id); 
-    if (pos.row < (rows-1)) {
-      var col = _maxRowCol(id, pos.row+1, pos.col);
-      var next_line_cols = _getLineColsCount(id, pos.row + 1);
-      _setCursorPosition(id, pos.row + 1, col);
+    var lines = _getLinesCount(id); 
+    if (pos.line < (lines-1)) {
+      var col = _maxLineCol(id, pos.line+1, pos.col);
+      var next_line_cols = _getLineColsCount(id, pos.line + 1);
+      _setCursorPosition(id, pos.line + 1, col);
       _scrollIfCursorNotVisible(id);
     }
   }
@@ -410,7 +411,7 @@ done. */
   function _moveCursorLeft(id) {
     var pos = _getCursorPosition(id);
     if (pos.col > 0) {
-      _setCursorPosition(id, pos.row, pos.col-1);
+      _setCursorPosition(id, pos.line, pos.col-1);
       _scrollIfCursorNotVisible(id);
     }
   }
@@ -420,63 +421,122 @@ done. */
       cnt = 1;
     }
     var pos = _getCursorPosition(id);
-    var line_cols = _getLineColsCount(id, pos.row);
+    var line_cols = _getLineColsCount(id, pos.line);
     if (pos.col+cnt <= line_cols) {
-      _setCursorPosition(id, pos.row, pos.col+cnt);
+      _setCursorPosition(id, pos.line, pos.col+cnt);
       _scrollIfCursorNotVisible(id);
     }
   }
   
   function _moveCursorHome(id) {
     var pos = _getCursorPosition(id);
-    _setCursorPosition(id, pos.row, 0);
+    _setCursorPosition(id, pos.line, 0);
     _scrollIfCursorNotVisible(id);
   }
   
   function _moveCursorEnd(id) {
     var pos = _getCursorPosition(id);
-    var line_cols = _getLineColsCount(id, pos.row);
-    _setCursorPosition(id, pos.row, line_cols);
+    var line_cols = _getLineColsCount(id, pos.line);
+    _setCursorPosition(id, pos.line, line_cols);
     _scrollIfCursorNotVisible(id);
   }
   
   function _moveCursorPageUp(id) {
     var pos = _getCursorPosition(id);
-    var page_rows = _getPageRowsCount(id);
-    var row = _minFirstRow(id, pos.row - page_rows + 1);
-    var col = _maxRowCol(id, row, pos.col);
-    _setCursorPosition(id, row, col);
+    var page_lines = _getPageLinesCount(id);
+    var line = _minFirstLine(id, pos.line - page_lines + 1);
+    var col = _maxLineCol(id, line, pos.col);
+    _setCursorPosition(id, line, col);
     _scrollIfCursorNotVisible(id);
   }
   
   function _moveCursorPageDown(id) {
     var pos = _getCursorPosition(id);
-    var page_rows = _getPageRowsCount(id);
-    var row = _maxLastRow(id, pos.row + page_rows - 1);
-    var col = _maxRowCol(id, row, pos.col);
-    _setCursorPosition(id, row, col);
+    var page_lines = _getPageLinesCount(id);
+    var line = _maxLastLine(id, pos.line + page_lines - 1);
+    var col = _maxLineCol(id, line, pos.col);
+    _setCursorPosition(id, line, col);
     _scrollIfCursorNotVisible(id);
   }
   
-  function _minFirstRow(id, row) {
-    if (row < 0) {
-      row = 0;
+  function _removeLeftChar(id) {
+    var pos = _getCursorPosition(id);
+    if (pos.col > 0) {
+      _removeChar(id, pos.line, pos.col - 1);
+      _moveCursorLeft(id);
+    } else if (pos.col == 0 && pos.line > 0) {
+      var cols = _getLineColsCount(id, pos.line-1);
+      _pasteLine(id, pos.line-1, _getLineColsCount(id, pos.line-1), pos.line);
+      _setCursorPosition(id, pos.line-1, cols);
+      _removeLine(id, pos.line);
     }
-    return row;
   }
   
-  function _maxLastRow(id, row) {
-    var rows = _getRowsCount(id);
-    if (row > (rows-1)) {
-      row = rows-1;
+  function _removeRightChar(id) {
+    var pos = _getCursorPosition(id);
+    var line_cols = _getLineColsCount(id, pos.line);
+    var lines = _getLinesCount(id);
+    if (pos.col < line_cols) {
+      _removeChar(id, pos.line, pos.col);
+    } else if (pos.line < lines-1 && pos.col == line_cols) {
+      _pasteLine(id, pos.line, pos.col, pos.line+1);
+      _removeLine(id, pos.line+1);
     }
-    return row;
   }
   
-  function _maxRowCol(id, row, col) {
-    var row_cols = _getLineColsCount(id, row);
-    if (row_cols < col) {
-      col = row_cols;
+  function _removeChar(id, line, col) {
+    var line_val = _getLine(id, line);
+    var left = line_val.substring(0, col);
+    var right = line_val.substring(col + 1);
+    _replaceLine(id, line, left + right);
+  }
+  
+  function _getLine(id, line) {
+    var h = jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).html();
+    h = h.replace(/<span[a-zA-Z0-9 ="_\-]*>/g,'').replace(/<\/span>/g,'');
+  /* There's extra space at the end */
+    h = jsHelper.decHtml(h).replace(/ $/, '');
+    return h;
+  }
+  
+  function _replaceLine(id, line, val) { 
+    var h = jsHelper.encHtml(val)+' ';
+    jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).html(h);
+    return true;
+  }
+  
+  function _pasteLine(id, tgt_line, tgt_col, paste_line) {
+    var paste_line_val = _getLine(id, paste_line);
+    var line_val = _getLine(id, tgt_line);
+    var left = line_val.substring(0, tgt_col);
+    var right = line_val.substring(tgt_col + 1);
+    _replaceLine(id, tgt_line, left + paste_line_val + right);
+  }
+  
+  function _removeLine(id, line) {
+    jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).rm();
+    jsHelper(id+_id_lnnums).children().filterTag('pre').nth(line+1).rm();
+  }
+  
+  function _minFirstLine(id, line) {
+    if (line < 0) {
+      line = 0;
+    }
+    return line;
+  }
+  
+  function _maxLastLine(id, line) {
+    var lines = _getLinesCount(id);
+    if (line > (lines-1)) {
+      line = lines-1;
+    }
+    return line;
+  }
+  
+  function _maxLineCol(id, line, col) {
+    var line_cols = _getLineColsCount(id, line);
+    if (line_cols < col) {
+      col = line_cols;
     }
     return col;
   }
@@ -580,7 +640,7 @@ done. */
       case 'set-active': return _setActive(id); break;
       case 'set-inactive': return _setInactive(id); break;
       case 'set-cursor-position': 
-        _setCursorPosition(id, opts['row'], opts['col']); 
+        _setCursorPosition(id, opts['line'], opts['col']); 
         break;
       case 'move-cursor-up': _moveCursorUp(id); break;
       case 'move-cursor-down': _moveCursorDown(id); break;

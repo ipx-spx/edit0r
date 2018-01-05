@@ -621,6 +621,26 @@ done. */
     jsHelper(id+_id_lnnums).append(pre);
   }
 
+  function _insertText(id, t) {
+    var match = t.match(/\n/g);
+    if (match !== null) {
+        var cnt_lines = match.length + 1;
+    } else {
+        var cnt_lines = 1;
+    }
+    if (cnt_lines == 1)
+      return _insertChars(id, t);
+  }
+
+  function _insertChars(id, t) {
+    var pos = _getCursorPosition(id);
+    var line = _getLine(id, pos.line);
+    var left = line.substring(0, pos.col);
+    var right = line.substring(pos.col);
+    _replaceLine(id, pos.line, left + t + right);
+    _moveCursorRight(id, t.length);
+  }
+
 /* Main initialization method. */
   function _init(id, o) {
     if (!jsHelper.elById(id)) {
@@ -700,7 +720,7 @@ done. */
       case 'remove-right-char': _removeRightChar(id); break;
       case 'remove-line': _removeCurLine(id); break;
       case 'new-line': _insertNewLine(id); break;
-      case 'insert-text': _insertText(id, opts); break;
+      case 'insert-text': _insertText(id, opts['text']); break;
     }
     return true;
   }

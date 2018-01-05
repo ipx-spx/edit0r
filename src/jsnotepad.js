@@ -574,6 +574,36 @@ done. */
       }
     }
   }
+  
+  function _insertLine(id, line, val) {
+    jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).func(
+      function(el) {
+        var new_line = jsHelper.nu('pre');
+        jsHelper(new_line).html(jsHelper.encHtml(val)+' ');
+        el.parentNode.insertBefore(new_line, el);
+      }
+    );
+  }
+  
+  function _insertNewLine(id) {
+    var pos = _getCursorPosition(id);
+    var line = _getLine(id, pos.line);
+    var left = line.substring(0, pos.col);
+    var right = line.substring(pos.col);
+    _replaceLine(id, pos.line, left);
+    _insertLine(id, pos.line+1, right);
+    _moveCursorDown(id);
+    _moveCursorHome(id);
+    _addLineNumber(id);
+  }
+  
+  function _addLineNumber(id) {
+    var n = jsHelper(id+_id_lnnums).children('pre').length();
+    n++;
+    var pre = jsHelper.nu('pre');
+    jsHelper(pre).html(_pre(n.toString()));
+    jsHelper(id+_id_lnnums).append(pre);
+  }
 
 /* Main initialization method. */
   function _init(id, o) {
@@ -652,7 +682,7 @@ done. */
       case 'move-cursor-page-down': _moveCursorPageDown(id); break;
       case 'remove-left-char': _removeLeftChar(id); break;
       case 'remove-right-char': _removeRightChar(id); break;
-      case 'new-line': _newLine(id); break;
+      case 'new-line': _insertNewLine(id); break;
       case 'insert-text': _insertText(id, opts); break;
     }
     return true;

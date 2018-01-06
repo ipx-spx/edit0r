@@ -630,6 +630,22 @@ done. */
     }
     if (cnt_lines == 1)
       return _insertChars(id, t);
+      
+    var arr_lines = t.split(/\n/);
+    var pos   = _getCursorPosition(id);
+    var line  = _getLine(id, pos.line);
+    var left  = line.substring(0, pos.col);
+    var right = line.substring(pos.col);
+    _replaceLine(id, pos.line, left + arr_lines[0]);
+    _moveCursorRight(id, arr_lines[0].length);
+    for (var i=1; i<cnt_lines; i++) {
+      if (i == cnt_lines-1) {
+        _insertLine(id, pos.line+i, arr_lines[i] + right);
+      } else {
+        _insertLine(id, pos.line+i, arr_lines[i]);
+      }
+    }
+    _setCursorPosition(id, pos.line+cnt_lines-1, arr_lines[cnt_lines-1].length);
   }
 
   function _insertChars(id, t) {

@@ -52,9 +52,9 @@ done. */
   var keyAltDown   = false;
   var keyCtrlDown  = false;
 /* Keycodes */
-  var ALT = 16;
+  var ALT = 18;
   var CTRL = 17;
-  var SHIFT = 18;
+  var SHIFT = 16;
   var ENTER = 13;
   var SPACE = 32;
   var DELETE = 46;
@@ -68,6 +68,9 @@ done. */
   var TAB = 9;
   var PAGEUP = 33;
   var PAGEDOWN = 34;
+  var C = 67;
+  var K = 75;
+  var V = 86;
 /* Ids of all jsNotepad instances on the page (with some details). See creating
    instance function. */
   var instances = {};
@@ -92,6 +95,7 @@ done. */
       'input': (typeof(input) == 'undefined' ? 'default' : input),
       'keysAttached': false,
       'scrollAttached': false,
+      'mouseAttached': false,
       'cursorPosition': [0, 0]
     };
   }
@@ -155,7 +159,7 @@ done. */
       }
       jsHelper(id_nums).html(ln_nums);
     /* Attach focus on the input once lines are clicked */
-      jsHelper(id).on('click', function() {
+      jsHelper(id).on('click', function(e) {
         var id = this.id.split('_')[0];
         jsHelper.elById(id+_id_cursorinput).focus();
       });
@@ -292,7 +296,12 @@ done. */
       if (!f)
         return null;
       
-      if (keyAltDown || keyCtrlDown)
+      if (evt.altKey && evt.ctrlKey) {
+        switch (evt.key) {
+          case 'k': _cmdOnAllActive('remove-line'); break;
+          default: return null; break;
+        }
+      } else if (evt.altKey || evt.ctrlKey)
         return null;
       
       if (evt.keyCode == UP || evt.keyCode == DOWN || evt.keyCode == LEFT ||
@@ -343,6 +352,17 @@ done. */
       _createCursor(jsHelper.elById(id));
       jsHelper.elById(o.id+_id_lnnums).scrollTop = this.scrollTop;
     });
+    instances[o.id]['scrollAttached'] = true;
+    return true;
+  }
+  
+  function _attachInstanceMouse(o) {
+    jsHelper(o.id+_id_cont).on('selectstart', function(e) {
+      e.preventDefault();
+      return false;
+    });
+    instances[o.id]['mouseAttached'] = true;
+    return true;
   }
 
   function _getScroll(id) {
@@ -514,9 +534,14 @@ done. */
   }
   
   function _removeLine(id, line) {
-    if (_getLineColsCount(id) > 1) {
+    var lns_cnt = _getLinesCount(id);
+    if (lns_cnt > 1) {
       jsHelper(id+_id_lns).children().filterTag('pre').nth(line+1).rm();
-      jsHelper(id+_id_lnnums).children().filterTag('pre').nth(line+1).rm();
+    /* When last line is removed, cursor needs to be moved up */
+      var pos = _getCursorPosition(id);
+      if (pos.line > lns_cnt-2) {
+        _setCursorPosition(id, lns_cnt-2, 0);
+      }
     } else if (line == 0) {
       _replaceLine(id, line, '');
     }
@@ -682,6 +707,9 @@ done. */
     }
     if (!instances[id]['scrollAttached']) {
       _attachInstanceScroll(t);
+    }
+    if (!instances[id]['mouseAttached']) {
+      _attachInstanceMouse(t);
     }
     /* @todo Implement later_attachResize(id); */
   };

@@ -31,6 +31,7 @@ var jsNotepad = (function() {
   var _id_cont        = _id_+'container';
   var _id_lnnums      = _id_+'lnnums';
   var _id_lns         = _id_+'lns';
+  var _id_sel         = _id_+'selection';
   var _id_char        = _id_+'char';
   var _id_cursor      = _id_+'cursor';
   var _id_cursorinput = _id_+'cursorinput';
@@ -40,6 +41,7 @@ var jsNotepad = (function() {
   var cls_cont   = "jsnotepad";
   var cls_lnnums = cls_+"line-numbers";
   var cls_lns    = cls_+"lines";
+  var cls_sel    = cls_+"selection-lines";
   var cls_char   = cls_+"char";
   var cls_cursor = cls_+"cursor";
   var cls_blur   = cls_+"blur";
@@ -95,7 +97,7 @@ done. */
       'scrollAttached': false,
       'mouseAttached': false,
       'cursorPosition': [0, 0],
-      'selections': [],
+      'selection': [-1,-1,-1,-1],
       'clipboards': []
     };
   }
@@ -174,6 +176,30 @@ done. */
       .style('width', (t_pos.w-ln_nums_pos.w)+'px').style('position','absolute')
       .style('top', '0px').style('left', ln_nums_pos.w+'px');
     return lns_obj;
+  };
+
+/* Creates element that will visualize selection. */
+  function _createSelectionLines(t_id) {
+    var id = t_id+_id_sel;
+    if (jsHelper(id).length() < 1) {
+      var sel_obj = _nuDiv(cls_sel, id);
+      var cnt_lns = jsHelper(t_id+_id_lns).children('pre').length();
+      var h = '';
+      for (var i=0; i<cnt_lns; i++) {
+        h = h+_pre(' ');
+      }
+      jsHelper(sel_obj).html(h);
+      jsHelper(t_id+_id_cont).append(sel_obj);
+    } else {
+      var sel_obj = jsHelper.elById(id);
+    }
+
+    /* Set position and size of selection element */
+    var lns_pos = jsHelper(t_id+_id_lns).pos();
+    jsHelper(sel_obj).style('height', lns_pos.h+'px')
+      .style('width', lns_pos.w+'px').style('position','absolute')
+      .style('top', '0px').style('left', lns_pos.l+'px');
+    return sel_obj;
   };
 
 /* Creates char element. */
@@ -276,10 +302,14 @@ done. */
       }
       if (!f)
         return null;
-      
+    
+    /* Keys with ctrl and alt down */
       if (evt.altKey && evt.ctrlKey) {
         switch (evt.key) {
-          case 'k': _cmdOnAllActive('remove-line'); break;
+          case 'k': 
+            _cmdOnAllActive('remove-line');
+            return true;
+            break;
           default: return null; break;
         }
       } else if (evt.altKey || evt.ctrlKey)
@@ -292,20 +322,51 @@ done. */
           evt.preventDefault();
       }
 
+    /* Keys without shift down */
+      if (!evt.shiftKey) {
+        switch (evt.keyCode) {
+          case BACKSPACE: 
+            _cmdOnAllActive('remove-left-char'); 
+            return true;
+            break;
+          case DELETE: 
+            _cmdOnAllActive('remove-right-char');
+            return true;
+            break;
+          default: return null; break;
+        }
+      }
+
     /* Basic cursor moves */
       switch (evt.keyCode) {
-        case LEFT: _cmdOnAllActive('move-cursor-left'); break;
-        case RIGHT: _cmdOnAllActive('move-cursor-right', {'c': 1}); break;
-        case UP: _cmdOnAllActive('move-cursor-up'); break;
-        case DOWN: _cmdOnAllActive('move-cursor-down'); break;
-        case HOME: _cmdOnAllActive('move-cursor-home'); break;
-        case END: _cmdOnAllActive('move-cursor-end'); break;
-        case PAGEUP: _cmdOnAllActive('move-cursor-page-up'); break;
-        case PAGEDOWN: _cmdOnAllActive('move-cursor-page-down'); break;
-
-        case BACKSPACE: _cmdOnAllActive('remove-left-char'); break;
-        case DELETE: _cmdOnAllActive('remove-right-char'); break;
-        case ENTER: _cmdOnAllActive('new-line'); break;
+        case LEFT:
+          _cmdOnAllActive('move-cursor-left', {'select': evt.shiftKey});
+          break;
+        case RIGHT:
+          _cmdOnAllActive('move-cursor-right', {'cnt': 1,
+                                                    'select': evt.shiftKey});
+          break;
+        case UP:
+          _cmdOnAllActive('move-cursor-up', {'select': evt.shiftKey});
+          break;
+        case DOWN:
+          _cmdOnAllActive('move-cursor-down', {'select': evt.shiftKey});
+          break;
+        case HOME:
+          _cmdOnAllActive('move-cursor-home', {'select': evt.shiftKey});
+          break;
+        case END:
+          _cmdOnAllActive('move-cursor-end', {'select': evt.shiftKey});
+          break;
+        case PAGEUP:
+          _cmdOnAllActive('move-cursor-page-up', {'select': evt.shiftKey});
+          break;
+        case PAGEDOWN: 
+          _cmdOnAllActive('move-cursor-page-down', {'select': evt.shiftKey});
+          break;
+        case ENTER:
+          _cmdOnAllActive('new-line');
+          break;
         default: break;
       }
     });
@@ -389,16 +450,32 @@ done. */
                                     'col': instances[id]['cursorPosition'][1] }
   }
   
-  function _moveCursorUp(id) {
+  function _getSelection(id) {
+    return { 'beginline': instances[id]['selection'][0],
+             'begincol': instances[id]['selection'][1],
+             'endline': instances[id]['selection'][2],
+             'endcol': instances[id]['selection'][3] };
+  }
+
+  function _setSelection(id, bl, bc, el, ec) {
+    instances[id]['selection'] = [bl, bc, el, ec];
+    return true;
+  }
+  
+  function _moveCursorUp(id, _, sel) {
     var pos = _getCursorPosition(id);
     if (pos.line > 0) {
       var col = _maxLineCol(id, pos.line-1, pos.col);
       _setCursorPosition(id, pos.line-1, col);
+      if (sel) {
+        var cur_sel = _getSelection(id);
+        
+      }
       _scrollIfCursorNotVisible(id);
     }
   }
 
-  function _moveCursorDown(id) {
+  function _moveCursorDown(id, _, sel) {
     var pos = _getCursorPosition(id);
     var lines = _getLinesCount(id); 
     if (pos.line < (lines-1)) {
@@ -409,7 +486,7 @@ done. */
     }
   }
 
-  function _moveCursorLeft(id) {
+  function _moveCursorLeft(id, _, sel) {
     var pos = _getCursorPosition(id);
     if (pos.col > 0) {
       _setCursorPosition(id, pos.line, pos.col-1);
@@ -417,7 +494,7 @@ done. */
     }
   }
 
-  function _moveCursorRight(id, cnt) {
+  function _moveCursorRight(id, cnt, sel) {
     if (typeof(cnt) != 'number') {
       cnt = 1;
     }
@@ -429,20 +506,20 @@ done. */
     }
   }
   
-  function _moveCursorHome(id) {
+  function _moveCursorHome(id, _, sel {
     var pos = _getCursorPosition(id);
     _setCursorPosition(id, pos.line, 0);
     _scrollIfCursorNotVisible(id);
   }
   
-  function _moveCursorEnd(id) {
+  function _moveCursorEnd(id, _, sel) {
     var pos = _getCursorPosition(id);
     var line_cols = _getLineColsCount(id, pos.line);
     _setCursorPosition(id, pos.line, line_cols);
     _scrollIfCursorNotVisible(id);
   }
   
-  function _moveCursorPageUp(id) {
+  function _moveCursorPageUp(id, _, sel) {
     var pos = _getCursorPosition(id);
     var page_lines = _getPageLinesCount(id);
     var line = _minFirstLine(id, pos.line - page_lines + 1);
@@ -451,7 +528,7 @@ done. */
     _scrollIfCursorNotVisible(id);
   }
   
-  function _moveCursorPageDown(id) {
+  function _moveCursorPageDown(id, _, sel) {
     var pos = _getCursorPosition(id);
     var page_lines = _getPageLinesCount(id);
     var line = _maxLastLine(id, pos.line + page_lines - 1);
@@ -675,7 +752,7 @@ done. */
     _createContainer(id);
     _createLineNumbers(id);
     _createLines(id);
-    /*_createSelection(id);*/
+    _createSelectionLines(id);
     _createChar(id);
     _createCursor(id);
     _createBlur(id);
@@ -736,14 +813,30 @@ done. */
       case 'set-cursor-position': 
         _setCursorPosition(id, opts['line'], opts['col']); 
         break;
-      case 'move-cursor-up': _moveCursorUp(id); break;
-      case 'move-cursor-down': _moveCursorDown(id); break;
-      case 'move-cursor-right': _moveCursorRight(id, opts['cnt']); break;
-      case 'move-cursor-left': _moveCursorLeft(id); break;
-      case 'move-cursor-end': _moveCursorEnd(id); break;
-      case 'move-cursor-home': _moveCursorHome(id); break;
-      case 'move-cursor-page-up': _moveCursorPageUp(id); break;
-      case 'move-cursor-page-down': _moveCursorPageDown(id); break;
+      case 'move-cursor-up': 
+        _moveCursorUp(id, null, opts['select']);
+        break;
+      case 'move-cursor-down': 
+        _moveCursorDown(id, null, opts['select']);
+        break;
+      case 'move-cursor-right':
+        _moveCursorRight(id, opts['cnt'], opts['select']);
+        break;
+      case 'move-cursor-left':
+        _moveCursorLeft(id, null, opts['select']);
+        break;
+      case 'move-cursor-end':
+        _moveCursorEnd(id, null, opts['select']);
+        break;
+      case 'move-cursor-home':
+        _moveCursorHome(id, null, opts['select']);
+        break;
+      case 'move-cursor-page-up':
+        _moveCursorPageUp(id, null, opts['select']);
+        break;
+      case 'move-cursor-page-down':
+        _moveCursorPageDown(id, null, opts['select']);
+        break;
       case 'remove-left-char': _removeLeftChar(id); break;
       case 'remove-right-char': _removeRightChar(id); break;
       case 'remove-line': _removeCurLine(id); break;

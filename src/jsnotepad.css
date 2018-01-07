@@ -9,6 +9,9 @@
   font-family: courier;
   font-size: 12px;
 }
+.jsnotepad-container {
+  background: #141414;
+}
 .jsnotepad-line-numbers {
   background: #222222;
   text-align: right;
@@ -22,7 +25,6 @@
   padding: 0;
 }
 .jsnotepad-lines {
-  background: #141414;
   float: left;
   clear: right;
   padding: 0;
@@ -67,7 +69,7 @@
   padding: 0;
   overflow: hidden;
   background: #4F6272;
-  z-index: 300;
+  z-index: 4900;
 }
 .jsnotepad-selection-lines pre {
   margin: 0;

@@ -47,10 +47,6 @@ var jsNotepad = (function() {
 if there are actually less lines. Therefore below number is added to get that
 done. */
   var extraLines = 100;
-/* Storing information about shift, alt and ctrl keys being down. */
-  var keyShiftDown = false;
-  var keyAltDown   = false;
-  var keyCtrlDown  = false;
 /* Keycodes */
   var ALT = 18;
   var CTRL = 17;
@@ -76,6 +72,8 @@ done. */
   var instances = {};
 /* Marks whether handlers for events on are already added */
   var keysAttached = false;
+/* Marks if blur and focus events on window are handled */
+  var windowBlurFocusAttached = false;
 /* Helpers */
   function _pre(s) {
     return '<pre>'+jsHelper.encHtml(s)+'</pre>';
@@ -96,7 +94,9 @@ done. */
       'keysAttached': false,
       'scrollAttached': false,
       'mouseAttached': false,
-      'cursorPosition': [0, 0]
+      'cursorPosition': [0, 0],
+      'selections': [],
+      'clipboards': []
     };
   }
 
@@ -257,36 +257,17 @@ done. */
     return true;
   }
 
-/* Handle alt, ctrl and shift keys */
-  function _attachKeysShiftCtrlAlt() {
-  /* When user leaves the window or comes back we reset the status of ctrl, alt
-     and shift */
+/* Handle window blur and focus */
+  function _attachWindowBlurFocus() {
     jsHelper(window).on('blur', function(evt) {
-      keyShiftDown = false; keyAltDown = false; keyCtrlDown = false;
       jsNotepad.cmd('', 'set-all-inactive');
     }).on('focus', function(evt) {
-      keyShiftDown = false; keyAltDown = false; keyCtrlDown = false;
       jsNotepad.cmd('', 'set-all-inactive');
-    }).on('keydown', function(evt) {
-      switch (evt.keyCode) {
-        case SHIFT: keyShiftDown = true; break;
-        case CTRL:  keyCtrlDown  = true; break;
-        case ALT:   keyAltDown   = true; break;
-        default: break;
-      }
-    }).on('keyup', function(evt) {
-      switch (evt.keyCode) {
-        case SHIFT: keyShiftDown = false; break;
-        case CTRL:  keyCtrlDown  = false; break;
-        case ALT:   keyAltDown   = false; break;
-        default: break;
-      }
     });
   }
 
 /* Attach all key events */
   function _attachKeys() {
-    _attachKeysShiftCtrlAlt();
     jsHelper(window).on('keypress', function(evt) {
       var f=false;
       for (i in instances) {
@@ -699,6 +680,9 @@ done. */
     _createCursor(t);
     _createBlur(t);
 
+    if (!windowBlurFocusAttached) {
+      _attachWindowBlurFocus();
+    }
     if (!keysAttached) {
       _attachKeys();
     }

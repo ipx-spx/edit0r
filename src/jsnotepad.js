@@ -108,25 +108,25 @@ done. */
     return instances;
   }
 /* Creates container element in an absolute position. */
-  function _createContainer(o) {
-    var id = o.id+_id_cont;
+  function _createContainer(t_id) {
+    var id = t_id+_id_cont;
     if (jsHelper(id).length() == 1)
       return jsHelper.elById(id);
     var c = _nuDivPosAbsLeft0Top0(cls_cont, id);
-    var textarea_pos = jsHelper(o.id).pos();
+    var textarea_pos = jsHelper(t_id).pos();
     jsHelper(c).style('overflow', 'hidden').style('width', textarea_pos.w+'px')
                                           .style('height', textarea_pos.h+'px');
-    var par = jsHelper(o).parent().style('position', 'relative').append(c);
+    var par = jsHelper(t_id).parent().style('position', 'relative').append(c);
     return c;
   };
 
 /* Creates element containing line numbers in position related to container. */
-  function _createLineNumbers(o) {
-    var id = o.id+_id_lnnums;
-    var h = jsHelper(o).pos().h;
+  function _createLineNumbers(t_id) {
+    var id = t_id+_id_lnnums;
+    var h = jsHelper(t_id).pos().h;
     if (jsHelper(id).length() < 1) {
       var l = _nuDivPosAbsLeft0Top0(cls_lnnums, id);
-      jsHelper(o.id+_id_cont).append(l);
+      jsHelper(t_id+_id_cont).append(l);
     } else {
       var l = jsHelper.elById(id);
     }
@@ -135,14 +135,14 @@ done. */
   };
 
 /* Creates element for every single line. */
-  function _createLines(o) {
-    var id = o.id+_id_lns, id_nums = o.id+_id_lnnums;
+  function _createLines(t_id) {
+    var id = t_id+_id_lns, id_nums = t_id+_id_lnnums;
     if (jsHelper(id).length() < 1) {
       var lns_obj = _nuDiv(cls_lns, id);
     /* Calculate number of lines by splitting the text with \n */
-      var match = jsHelper(o).val().match(/\n/g),
+      var match = jsHelper(t_id).val().match(/\n/g),
         cnt_lns = (match !== null ? match.length+1 : 1),
-        arr_lns = jsHelper(o).val().split(/\n/), ln_nums  = '', lns_html = '';
+        arr_lns = jsHelper(t_id).val().split(/\n/), ln_nums  = '', lns_html = '';
     /* Generate preformatted element for every line. */
       for (var i=0; i<cnt_lns; i++) {
         lns_html = lns_html+_pre(jsHelper.encHtml(arr_lns[i])+' ');
@@ -151,7 +151,7 @@ done. */
     /* Overwrite the scroll to 0, just in case browser caches something */
       lns_obj.scrollTop = 0; lns_obj.scrollLeft = 0;
     /* Add lines object to the container*/
-      jsHelper(o.id+_id_cont).append(lns_obj);
+      jsHelper(t_id+_id_cont).append(lns_obj);
 
     /* Generate line numbers. */
       for (var i=0; i<cnt_lns+extraLines; i++) {
@@ -169,20 +169,20 @@ done. */
 
     /* Set position and size of lines element */
     var ln_nums_pos = jsHelper(id_nums).pos();
-    var o_pos = jsHelper(o).pos();
-    jsHelper(lns_obj).style('height', o_pos.h+'px')
-      .style('width', (o_pos.w-ln_nums_pos.w)+'px').style('position','absolute')
+    var t_pos = jsHelper(t_id).pos();
+    jsHelper(lns_obj).style('height', t_pos.h+'px')
+      .style('width', (t_pos.w-ln_nums_pos.w)+'px').style('position','absolute')
       .style('top', '0px').style('left', ln_nums_pos.w+'px');
     return lns_obj;
   };
 
 /* Creates char element. */
-  function _createChar(o) {
-    var id = o.id + _id_char;
+  function _createChar(t_id) {
+    var id = t_id + _id_char;
     if (jsHelper(id).length() < 1) {
       var char_obj = jsHelper.nu('span', { className:cls_char, id:id,
                                                         innerHTML: '&nbsp;' });
-      jsHelper(o.id+_id_cont).append(char_obj);
+      jsHelper(t_id+_id_cont).append(char_obj);
     } else {
       var char_obj = jsHelper.elById(id);
     }
@@ -190,37 +190,37 @@ done. */
   };
 
 /* Creates element that will be the cursor. */
-  function _createCursor(o) {
-    var id = o.id+_id_cursor;
+  function _createCursor(t_id) {
+    var id = t_id+_id_cursor;
     if (jsHelper(id).length() < 1) {
-      var char_coords = jsHelper(o.id+_id_char).pos();
+      var char_coords = jsHelper(t_id+_id_char).pos();
       var cursor_obj = jsHelper.nu('div',{ className:cls_cursor, 
-        id: o.id+_id_cursor, style: { height: char_coords.h+'px' }, 
-        innerHTML: '<textarea rows="1" id="'+o.id+_id_cursorinput+'"'
+        id: t_id+_id_cursor, style: { height: char_coords.h+'px' }, 
+        innerHTML: '<textarea rows="1" id="'+t_id+_id_cursorinput+'"'
                  + 'readonly="readonly"></textarea>' });
-      jsHelper(o.id+_id_cont).append(cursor_obj);
+      jsHelper(t_id+_id_cont).append(cursor_obj);
     }
-    var line = instances[o.id]['cursorPosition'][0],
-        col = instances[o.id]['cursorPosition'][1];
-    var lns_pos = jsHelper(o.id+_id_lns).pos();
-    var char_pos = jsHelper(o.id+_id_char).pos();
-    var scroll = _getScroll(o.id);
+    var line = instances[t_id]['cursorPosition'][0],
+        col = instances[t_id]['cursorPosition'][1];
+    var lns_pos = jsHelper(t_id+_id_lns).pos();
+    var char_pos = jsHelper(t_id+_id_char).pos();
+    var scroll = _getScroll(t_id);
     var l = lns_pos.l + (col*char_pos.w) - scroll.l;
     var t = lns_pos.t + (line*char_pos.h) - scroll.t; 
     jsHelper(id).style('position', 'absolute')
       .style('left', l+'px').style('top', t+'px');
-    jsHelper.elById(o.id+_id_cursorinput).focus();
+    jsHelper.elById(t_id+_id_cursorinput).focus();
     return jsHelper.elById(id);
   };
 
 /* Creates a layer on top of editor to handle blurring and focusing */
-  function _createBlur(o) {
-    var id = o.id+_id_blur;
-    var pos = jsHelper(o).pos();
+  function _createBlur(t_id) {
+    var id = t_id+_id_blur;
+    var pos = jsHelper(t_id).pos();
     var wasCreation = false;
     if (jsHelper(id).length() < 1) {
       var b = _nuDivPosAbsLeft0Top0(cls_blur, id);
-      var par = jsHelper(o).parent().style('position', 'relative').append(b);
+      var par = jsHelper(t_id).parent().style('position', 'relative').append(b);
       jsHelper(id).style('zIndex', 5000);
       wasCreation = true;
     }
@@ -228,7 +228,7 @@ done. */
     if (wasCreation) {
       jsHelper(id).on('click', function() {
         jsNotepad.cmd('', 'set-all-inactive');
-        jsNotepad.cmd(o.id, 'set-active');
+        jsNotepad.cmd(t_id, 'set-active');
       });
     }
   }
@@ -313,8 +313,8 @@ done. */
     return true;
   };
 
-  function _attachInstanceKeys(o) {
-    jsHelper(o.id+_id_cursorinput).on('keyup', function(evt) {
+  function _attachInstanceKeys(t_id) {
+    jsHelper(t_id+_id_cursorinput).on('keyup', function(evt) {
       var id = this.id.split('_')[0];
       var val = this.value;
       if (val != '') {
@@ -322,27 +322,27 @@ done. */
       }
       this.value = '';
     });
-    instances[o.id]['keysAttached'] = true;
+    instances[t_id]['keysAttached'] = true;
     return true;
   }
   
-  function _attachInstanceScroll(o) {
-    jsHelper(o.id+_id_lns).on('scroll', function() {
+  function _attachInstanceScroll(t_id) {
+    jsHelper(t_id+_id_lns).on('scroll', function() {
       var id = this.id.split('_')[0];
       // @scope?
-      _createCursor(jsHelper.elById(id));
-      jsHelper.elById(o.id+_id_lnnums).scrollTop = this.scrollTop;
+      _createCursor(id);
+      jsHelper.elById(id+_id_lnnums).scrollTop = this.scrollTop;
     });
-    instances[o.id]['scrollAttached'] = true;
+    instances[t_id]['scrollAttached'] = true;
     return true;
   }
   
-  function _attachInstanceMouse(o) {
-    jsHelper(o.id+_id_cont).on('selectstart', function(e) {
+  function _attachInstanceMouse(t_id) {
+    jsHelper(t_id+_id_cont).on('selectstart', function(e) {
       e.preventDefault();
       return false;
     });
-    instances[o.id]['mouseAttached'] = true;
+    instances[t_id]['mouseAttached'] = true;
     return true;
   }
 
@@ -381,7 +381,7 @@ done. */
     if (col > cols)
       return false;
     _addInstanceCursorPosition(id, line, col);
-    _createCursor(jsHelper.elById(id));
+    _createCursor(id);
   }
 
   function _getCursorPosition(id) {
@@ -672,13 +672,13 @@ done. */
     _addInstance(id);
     var t = jsHelper.elById(id);
     _addInstanceCursorPosition(id, 0, 0);
-    _createContainer(t);
-    _createLineNumbers(t);
-    _createLines(t);
+    _createContainer(id);
+    _createLineNumbers(id);
+    _createLines(id);
     /*_createSelection(id);*/
-    _createChar(t);
-    _createCursor(t);
-    _createBlur(t);
+    _createChar(id);
+    _createCursor(id);
+    _createBlur(id);
 
     if (!windowBlurFocusAttached) {
       _attachWindowBlurFocus();
@@ -687,13 +687,13 @@ done. */
       _attachKeys();
     }
     if (!instances[id]['keysAttached']) {
-      _attachInstanceKeys(t);
+      _attachInstanceKeys(id);
     }
     if (!instances[id]['scrollAttached']) {
-      _attachInstanceScroll(t);
+      _attachInstanceScroll(id);
     }
     if (!instances[id]['mouseAttached']) {
-      _attachInstanceMouse(t);
+      _attachInstanceMouse(id);
     }
     /* @todo Implement later_attachResize(id); */
   };

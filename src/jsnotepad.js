@@ -307,7 +307,7 @@ done. */
       if (evt.altKey && evt.ctrlKey) {
         switch (evt.key) {
           case 'k': 
-            _cmdOnAllActive('remove-line');
+            _execOnAllActive(function(id) { _removeCurLine(id); });
             return true;
             break;
           default: return null; break;
@@ -326,46 +326,53 @@ done. */
       if (!evt.shiftKey) {
         switch (evt.keyCode) {
           case BACKSPACE: 
-            _cmdOnAllActive('remove-left-char'); 
+            _execOnAllActive(function(id) { _removeLeftChar(id); });
             return true;
             break;
           case DELETE: 
-            _cmdOnAllActive('remove-right-char');
+            _execOnAllActive(function(id) { _removeRightChar(id); });
             return true;
             break;
-          default: return null; break;
+          default: break;
         }
       }
 
     /* Basic cursor moves */
       switch (evt.keyCode) {
         case LEFT:
-          _cmdOnAllActive('move-cursor-left', {'select': evt.shiftKey});
+          _execOnAllActive(
+            function(id) { _moveCursorLeft(id, null, evt.shiftKey); });
           break;
         case RIGHT:
-          _cmdOnAllActive('move-cursor-right', {'cnt': 1,
-                                                    'select': evt.shiftKey});
+          _execOnAllActive(
+            function(id) { _moveCursorRight(id, null, evt.shiftKey); });
           break;
         case UP:
-          _cmdOnAllActive('move-cursor-up', {'select': evt.shiftKey});
+          _execOnAllActive(
+            function(id) { _moveCursorUp(id, null, evt.shiftKey); });
           break;
         case DOWN:
-          _cmdOnAllActive('move-cursor-down', {'select': evt.shiftKey});
+          _execOnAllActive(
+            function(id) { _moveCursorDown(id, null, evt.shiftKey); });
           break;
         case HOME:
-          _cmdOnAllActive('move-cursor-home', {'select': evt.shiftKey});
+          _execOnAllActive(
+            function(id) { _moveCursorHome(id, evt.shiftKey); });
           break;
         case END:
-          _cmdOnAllActive('move-cursor-end', {'select': evt.shiftKey});
+          _execOnAllActive(
+            function(id) { _moveCursorEnd(id, evt.shiftKey); });
           break;
         case PAGEUP:
-          _cmdOnAllActive('move-cursor-page-up', {'select': evt.shiftKey});
+          _execOnAllActive(
+            function(id) { _moveCursorPageUp(id, evt.shiftKey); });
           break;
         case PAGEDOWN: 
-          _cmdOnAllActive('move-cursor-page-down', {'select': evt.shiftKey});
+          _execOnAllActive(
+            function(id) { _moveCursorPageDown(id, evt.shiftKey); });
           break;
-        case ENTER:
-          _cmdOnAllActive('new-line');
+        case ENTER: 
+          _execOnAllActive(function(id){ _insertNewLine(id); });
           break;
         default: break;
       }
@@ -379,7 +386,7 @@ done. */
       var id = this.id.split('_')[0];
       var val = this.value;
       if (val != '') {
-        jsNotepad.cmd(id, 'insert-text', {'text': val});
+        _insertText(id, val);
       }
       this.value = '';
     });
@@ -775,6 +782,14 @@ done. */
     /* @todo Implement later_attachResize(id); */
   };
 
+  function _execOnAllActive(fn) {
+    for (i in instances) {
+      if (instances[i]['active']) {
+        fn(i);
+      }
+    }
+  }
+
   function _cmdOnAllActive(cmd, opts) {
     for (i in instances) {
       if (instances[i]['active']) {
@@ -810,38 +825,6 @@ done. */
     switch (cmd) {
       case 'set-active': return _setActive(id); break;
       case 'set-inactive': return _setInactive(id); break;
-      case 'set-cursor-position': 
-        _setCursorPosition(id, opts['line'], opts['col']); 
-        break;
-      case 'move-cursor-up': 
-        _moveCursorUp(id, null, opts['select']);
-        break;
-      case 'move-cursor-down': 
-        _moveCursorDown(id, null, opts['select']);
-        break;
-      case 'move-cursor-right':
-        _moveCursorRight(id, opts['cnt'], opts['select']);
-        break;
-      case 'move-cursor-left':
-        _moveCursorLeft(id, null, opts['select']);
-        break;
-      case 'move-cursor-end':
-        _moveCursorEnd(id, opts['select']);
-        break;
-      case 'move-cursor-home':
-        _moveCursorHome(id, opts['select']);
-        break;
-      case 'move-cursor-page-up':
-        _moveCursorPageUp(id, opts['select']);
-        break;
-      case 'move-cursor-page-down':
-        _moveCursorPageDown(id, opts['select']);
-        break;
-      case 'remove-left-char': _removeLeftChar(id); break;
-      case 'remove-right-char': _removeRightChar(id); break;
-      case 'remove-line': _removeCurLine(id); break;
-      case 'new-line': _insertNewLine(id); break;
-      case 'insert-text': _insertText(id, opts['text']); break;
     }
     return true;
   }

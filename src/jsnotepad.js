@@ -506,20 +506,20 @@ done. */
     }
   }
   
-  function _moveCursorHome(id, _, sel {
+  function _moveCursorHome(id, sel) {
     var pos = _getCursorPosition(id);
     _setCursorPosition(id, pos.line, 0);
     _scrollIfCursorNotVisible(id);
   }
   
-  function _moveCursorEnd(id, _, sel) {
+  function _moveCursorEnd(id, sel) {
     var pos = _getCursorPosition(id);
     var line_cols = _getLineColsCount(id, pos.line);
     _setCursorPosition(id, pos.line, line_cols);
     _scrollIfCursorNotVisible(id);
   }
   
-  function _moveCursorPageUp(id, _, sel) {
+  function _moveCursorPageUp(id, sel) {
     var pos = _getCursorPosition(id);
     var page_lines = _getPageLinesCount(id);
     var line = _minFirstLine(id, pos.line - page_lines + 1);
@@ -528,7 +528,7 @@ done. */
     _scrollIfCursorNotVisible(id);
   }
   
-  function _moveCursorPageDown(id, _, sel) {
+  function _moveCursorPageDown(id, sel) {
     var pos = _getCursorPosition(id);
     var page_lines = _getPageLinesCount(id);
     var line = _maxLastLine(id, pos.line + page_lines - 1);
@@ -826,16 +826,16 @@ done. */
         _moveCursorLeft(id, null, opts['select']);
         break;
       case 'move-cursor-end':
-        _moveCursorEnd(id, null, opts['select']);
+        _moveCursorEnd(id, opts['select']);
         break;
       case 'move-cursor-home':
-        _moveCursorHome(id, null, opts['select']);
+        _moveCursorHome(id, opts['select']);
         break;
       case 'move-cursor-page-up':
-        _moveCursorPageUp(id, null, opts['select']);
+        _moveCursorPageUp(id, opts['select']);
         break;
       case 'move-cursor-page-down':
-        _moveCursorPageDown(id, null, opts['select']);
+        _moveCursorPageDown(id, opts['select']);
         break;
       case 'remove-left-char': _removeLeftChar(id); break;
       case 'remove-right-char': _removeRightChar(id); break;

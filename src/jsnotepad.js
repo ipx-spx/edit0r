@@ -469,15 +469,82 @@ done. */
     return true;
   }
   
+  function _clearSelection(id) {
+    instances[id]['selection'] = [-1,-1,-1,-1];
+  }
+  
+  function _isNoSelection(id) {
+    return (instances[id]['selection'][0] == -1);
+  }
+  
+  function _isSelectionEdge(id, line, col) {
+    var sel = _getSelection(id);
+    if (line == sel.beginline && col == sel.begincol)
+      return 1;
+    if (line == sel.endline && col == sel.endcol)
+      return 2;
+    return 0;
+  }
+  
+  function _comparePositions(sl, sc, dl, dc) {
+    if (dl > sl) {
+      return 1;
+    } else if (dl < sl) {
+      return -1;
+    } else if (dl == sl) {
+      if (dc > sc) {
+        return 1;
+      } else if (dc < sc) {
+        return -1;
+      } else {
+        return 0;
+      }
+    }
+  }
+  
+  function _setSelectionFromMove(id, sl, sc, dl, dc) {
+    var sel = _getSelection(id);
+    if (_isNoSelection(id) || _isSelectionEdge(id, sl, sc) == 0) { 
+      if (_comparePositions(sl, sc, dl, dc) == -1) {
+        // od destination do source
+        _setSelection(id, dl, dc, sl, sc);
+      } else if (_comparePositions(sl, sc, dl, dc) == 1) {
+        // od source do destination
+        _setSelection(id, sl, sc, dl, dc);
+      }
+    } else if (_isSelectionEdge(id, sl, sc) == 1) {
+      if (_comparePositions(dl, dc, sel.endline, sel.endcol) == 1) {
+        // od destination do current end
+        _setSelection(id, dl, dc, sel.endline, sel.endcol);
+      } else if (_comparePositions(dl, dc, sel.endline, sel.endcol) == -1) {
+        // od current end do destination
+        _setSelection(id, sel.endline, sel.endcol, dl, dc);
+      } else {
+        _clearSelection(id);
+      }
+    } else if (_isSelectionEdge(id, sl, sc) == 2) {
+      var cmp = _comparePositions(dl, dc, sel.beginline, sel.begincol);
+      if (cmp == -1) {
+        // od current begin do destination
+        _setSelection(id, sel.beginline, sel.begincol, dl, dc);
+      } else if (cmp == 1) {
+        // od destination do current begin
+        _setSelection(id, dl, dc, sel.beginline, sel.begincol);
+      } else {
+        _clearSelection(id);
+      }
+    }
+    console.log(_getSelection(id));
+  }
+  
   function _moveCursorUp(id, _, sel) {
     var pos = _getCursorPosition(id);
     if (pos.line > 0) {
       var col = _maxLineCol(id, pos.line-1, pos.col);
-      _setCursorPosition(id, pos.line-1, col);
       if (sel) {
-        var cur_sel = _getSelection(id);
-        
+        _setSelectionFromMove(id, pos.line, pos.col, pos.line-1, col);
       }
+      _setCursorPosition(id, pos.line-1, col);
       _scrollIfCursorNotVisible(id);
     }
   }
@@ -488,14 +555,21 @@ done. */
     if (pos.line < (lines-1)) {
       var col = _maxLineCol(id, pos.line+1, pos.col);
       var next_line_cols = _getLineColsCount(id, pos.line + 1);
+      if (sel) {
+        _setSelectionFromMove(id, pos.line, pos.col, pos.line+1, col);
+      }
       _setCursorPosition(id, pos.line + 1, col);
       _scrollIfCursorNotVisible(id);
+      
     }
   }
 
   function _moveCursorLeft(id, _, sel) {
     var pos = _getCursorPosition(id);
     if (pos.col > 0) {
+      if (sel) {
+        _setSelectionFromMove(id, pos.line, pos.col, pos.line, pos.col-1);
+      }
       _setCursorPosition(id, pos.line, pos.col-1);
       _scrollIfCursorNotVisible(id);
     }
@@ -508,6 +582,9 @@ done. */
     var pos = _getCursorPosition(id);
     var line_cols = _getLineColsCount(id, pos.line);
     if (pos.col+cnt <= line_cols) {
+      if (sel) {
+        _setSelectionFromMove(id, pos.line, pos.col, pos.line, pos.col+cnt);
+      }
       _setCursorPosition(id, pos.line, pos.col+cnt);
       _scrollIfCursorNotVisible(id);
     }
@@ -515,6 +592,9 @@ done. */
   
   function _moveCursorHome(id, sel) {
     var pos = _getCursorPosition(id);
+    if (sel) {
+      _setSelectionFromMove(id, pos.line, pos.col, pos.line, 0);
+    }
     _setCursorPosition(id, pos.line, 0);
     _scrollIfCursorNotVisible(id);
   }
@@ -522,6 +602,9 @@ done. */
   function _moveCursorEnd(id, sel) {
     var pos = _getCursorPosition(id);
     var line_cols = _getLineColsCount(id, pos.line);
+    if (sel) {
+      _setSelectionFromMove(id, pos.line, pos.col, pos.line, line_cols);
+    }
     _setCursorPosition(id, pos.line, line_cols);
     _scrollIfCursorNotVisible(id);
   }
@@ -531,6 +614,9 @@ done. */
     var page_lines = _getPageLinesCount(id);
     var line = _minFirstLine(id, pos.line - page_lines + 1);
     var col = _maxLineCol(id, line, pos.col);
+    if (sel) {
+      _setSelectionFromMove(id, pos.line, pos.col, line, col);
+    }
     _setCursorPosition(id, line, col);
     _scrollIfCursorNotVisible(id);
   }
@@ -540,6 +626,9 @@ done. */
     var page_lines = _getPageLinesCount(id);
     var line = _maxLastLine(id, pos.line + page_lines - 1);
     var col = _maxLineCol(id, line, pos.col);
+    if (sel) {
+      _setSelectionFromMove(id, pos.line, pos.col, line, col);
+    }
     _setCursorPosition(id, line, col);
     _scrollIfCursorNotVisible(id);
   }

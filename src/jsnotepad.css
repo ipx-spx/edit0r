@@ -23,6 +23,8 @@
 .jsnotepad-line-numbers pre {
   margin: 0;
   padding: 0;
+  height: 13px;
+  display: block;
 }
 .jsnotepad-lines {
   float: left;
@@ -35,6 +37,7 @@
   margin: 0;
   padding: 0;
   color: #eeeeee;
+  height: 13px;
 }
 .jsnotepad-lines pre:last-child {
   border-bottom: solid 1px #88AFD0;
@@ -46,6 +49,7 @@
   padding-left:1px;
   background-color:#ffffff;
   z-index: 5100;
+  height: 13px;
 }
 .jsnotepad-char {
   margin: 0;
@@ -53,6 +57,8 @@
   background: none;
   opacity: 1;
   color: #ffffff;
+  height: 13px;
+  display: inline-block;
 }
 .jsnotepad-cursor textarea {
   margin: 0;

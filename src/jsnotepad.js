@@ -506,18 +506,14 @@ done. */
     var sel = _getSelection(id);
     if (_isNoSelection(id) || _isSelectionEdge(id, sl, sc) == 0) { 
       if (_comparePositions(sl, sc, dl, dc) == -1) {
-        // od destination do source
         _setSelection(id, dl, dc, sl, sc);
       } else if (_comparePositions(sl, sc, dl, dc) == 1) {
-        // od source do destination
         _setSelection(id, sl, sc, dl, dc);
       }
     } else if (_isSelectionEdge(id, sl, sc) == 1) {
       if (_comparePositions(dl, dc, sel.endline, sel.endcol) == 1) {
-        // od destination do current end
         _setSelection(id, dl, dc, sel.endline, sel.endcol);
       } else if (_comparePositions(dl, dc, sel.endline, sel.endcol) == -1) {
-        // od current end do destination
         _setSelection(id, sel.endline, sel.endcol, dl, dc);
       } else {
         _clearSelection(id);
@@ -525,10 +521,8 @@ done. */
     } else if (_isSelectionEdge(id, sl, sc) == 2) {
       var cmp = _comparePositions(dl, dc, sel.beginline, sel.begincol);
       if (cmp == -1) {
-        // od current begin do destination
         _setSelection(id, sel.beginline, sel.begincol, dl, dc);
       } else if (cmp == 1) {
-        // od destination do current begin
         _setSelection(id, dl, dc, sel.beginline, sel.begincol);
       } else {
         _clearSelection(id);

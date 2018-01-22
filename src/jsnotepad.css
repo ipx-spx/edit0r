@@ -73,7 +73,7 @@
 }
 .jsnotepad-selection-lines {
   padding: 0;
-  overflow: hidden;
+  overflow: scroll;
   background: #4F6272;
   z-index: 4900;
 }
@@ -81,6 +81,7 @@
   margin: 0;
   padding: 0;
   color: #eeeeee;
+  height: 13px;
 }
 .jsnotepad-selection-lines span {
   background: #5F8292;

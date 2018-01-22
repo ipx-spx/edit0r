@@ -400,6 +400,7 @@ done. */
       // @scope?
       _createCursor(id);
       jsHelper.elById(id+_id_lnnums).scrollTop = this.scrollTop;
+      jsHelper.elById(id+_id_sel).scrollTop = this.scrollTop;
     });
     instances[t_id]['scrollAttached'] = true;
     return true;
@@ -466,13 +467,59 @@ done. */
 
   function _setSelection(id, bl, bc, el, ec) {
     instances[id]['selection'] = [bl, bc, el, ec];
+    _createSelectionVisual(id);
     return true;
   }
   
   function _clearSelection(id) {
+    _clearSelectionVisual(id);
     instances[id]['selection'] = [-1,-1,-1,-1];
   }
-  
+ 
+  function _clearSelectionVisual(id) {
+    if (!_isNoSelection(id)) {
+      var s = _getSelection(id);
+      if (s.beginline == s.endline) {
+        jsHelper(id+_id_sel).children('pre').nth(s.beginline+1).html(' ');
+      } else {
+        for (i=s.beginline; i<=s.endline; i++) {
+          jsHelper(id+_id_sel).children('pre').nth(i+1).html(' ');
+        }
+      }
+    }
+  }
+
+  function _createSelectionVisual(id) {
+    if (!_isNoSelection(id)) {
+      var s = _getSelection(id);
+      if (s.beginline == s.endline) {
+        var h = '';
+        if (s.begincol>0) {
+          h = ' '.repeat(s.begincol);
+        }
+        h += '<span>'+' '.repeat(s.endcol-s.begincol)+'</span>';
+        jsHelper(id+_id_sel).children('pre').nth(s.beginline+1).html(h);
+      } else {
+        for (i=s.beginline; i<=s.endline; i++) {
+          var cols = _getLineColsCount(id, i);
+          if (i == s.beginline) {
+            var h = '';
+            if (s.beginline>0) {
+              h = ' '.repeat(s.begincol);
+            }
+            h += '<span>'+' '.repeat(cols-s.begincol)+'</span>';
+            jsHelper(id+_id_sel).children('pre').nth(i+1).html(h);
+          } else if (i == s.endline) {
+            var h = '<span>'+' '.repeat(s.endcol)+'</span>';
+            jsHelper(id+_id_sel).children('pre').nth(i+1).html(h);
+          } else {
+            jsHelper(id+_id_sel).children('pre').nth(i+1).html('<span>'+' '.repeat(cols)+'</span>');
+          }
+        }
+      }
+    }
+  }
+ 
   function _isNoSelection(id) {
     return (instances[id]['selection'][0] == -1);
   }
@@ -537,6 +584,8 @@ done. */
       var col = _maxLineCol(id, pos.line-1, pos.col);
       if (sel) {
         _setSelectionFromMove(id, pos.line, pos.col, pos.line-1, col);
+      } else {
+        _clearSelection(id);
       }
       _setCursorPosition(id, pos.line-1, col);
       _scrollIfCursorNotVisible(id);
@@ -551,6 +600,8 @@ done. */
       var next_line_cols = _getLineColsCount(id, pos.line + 1);
       if (sel) {
         _setSelectionFromMove(id, pos.line, pos.col, pos.line+1, col);
+      } else {
+        _clearSelection(id);
       }
       _setCursorPosition(id, pos.line + 1, col);
       _scrollIfCursorNotVisible(id);
@@ -563,6 +614,8 @@ done. */
     if (pos.col > 0) {
       if (sel) {
         _setSelectionFromMove(id, pos.line, pos.col, pos.line, pos.col-1);
+      } else {
+        _clearSelection(id);
       }
       _setCursorPosition(id, pos.line, pos.col-1);
       _scrollIfCursorNotVisible(id);
@@ -578,6 +631,8 @@ done. */
     if (pos.col+cnt <= line_cols) {
       if (sel) {
         _setSelectionFromMove(id, pos.line, pos.col, pos.line, pos.col+cnt);
+      } else {
+        _clearSelection(id);
       }
       _setCursorPosition(id, pos.line, pos.col+cnt);
       _scrollIfCursorNotVisible(id);
@@ -588,6 +643,8 @@ done. */
     var pos = _getCursorPosition(id);
     if (sel) {
       _setSelectionFromMove(id, pos.line, pos.col, pos.line, 0);
+    } else {
+      _clearSelection(id);
     }
     _setCursorPosition(id, pos.line, 0);
     _scrollIfCursorNotVisible(id);
@@ -598,6 +655,8 @@ done. */
     var line_cols = _getLineColsCount(id, pos.line);
     if (sel) {
       _setSelectionFromMove(id, pos.line, pos.col, pos.line, line_cols);
+    } else {
+      _clearSelection(id);
     }
     _setCursorPosition(id, pos.line, line_cols);
     _scrollIfCursorNotVisible(id);
@@ -610,6 +669,8 @@ done. */
     var col = _maxLineCol(id, line, pos.col);
     if (sel) {
       _setSelectionFromMove(id, pos.line, pos.col, line, col);
+    } else {
+      _clearSelection(id);
     }
     _setCursorPosition(id, line, col);
     _scrollIfCursorNotVisible(id);
@@ -622,6 +683,8 @@ done. */
     var col = _maxLineCol(id, line, pos.col);
     if (sel) {
       _setSelectionFromMove(id, pos.line, pos.col, line, col);
+    } else {
+      _clearSelection(id);
     }
     _setCursorPosition(id, line, col);
     _scrollIfCursorNotVisible(id);

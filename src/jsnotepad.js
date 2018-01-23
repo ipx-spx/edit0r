@@ -691,6 +691,10 @@ done. */
   }
   
   function _removeLeftChar(id) {
+    if (!_isNoSelection(id)) {
+      _removeSelected(id);
+      return true;
+    }
     var pos = _getCursorPosition(id);
     if (pos.col > 0) {
       _removeChar(id, pos.line, pos.col - 1);
@@ -704,6 +708,10 @@ done. */
   }
   
   function _removeRightChar(id) {
+    if (!_isNoSelection(id)) {
+      _removeSelected(id);
+      return true;
+    }
     var pos = _getCursorPosition(id);
     var line_cols = _getLineColsCount(id, pos.line);
     var lines = _getLinesCount(id);
@@ -742,6 +750,20 @@ done. */
     var left = line_val.substring(0, tgt_col);
     var right = line_val.substring(tgt_col + 1);
     _replaceLine(id, tgt_line, left + paste_line_val + right);
+  }
+
+  function _removeSelected(id) {
+    var s = _getSelection(id);
+    if (s.beginline == s.endline) {
+    } else {
+      for (var l=s.beginline; l<=s.endline; l++) {
+        if (l == s.beginline) {
+        } else if (l == s.endline) {
+        } else {
+          
+        }
+      }
+    } 
   }
   
   function _removeLine(id, line) {

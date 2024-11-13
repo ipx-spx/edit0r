@@ -1,4 +1,4 @@
-# js-dom-notepad
+# js-notepad
 
 ## This is a very old project and it is no longer maintained.
 

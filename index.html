@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>jsnotepad - simple JavaScript text editor that replaces textarea</title>
-<link href="src/jsnotepad.css" rel="stylesheet">
+<title>js-dom-notepad - simple JavaScript text editor that replaces textarea</title>
+<link href="src/js-dom-notepad.css" rel="stylesheet">
 <style>
     body { margin:40px; padding:30px; background: #040404; color: #999999;}
     textarea { margin:0; padding:0; border:0; }
@@ -33,8 +33,8 @@ Nam consectetur diam ut nunc rhoncus varius. Class aptent taciti sociosqu ad lit
   <textarea style="width:350px;height:300px; margin:0" id="notepad2">Textarea</textarea>
 </div>
 </body>
-<script src="src/jshelper.js"></script>
-<script src="src/jsnotepad.js"></script>
+<script src="src/js-dom-helper.js"></script>
+<script src="src/js-dom-notepad.js"></script>
 <script>
     $.on("documentload", function() {
         $('notepad').html(

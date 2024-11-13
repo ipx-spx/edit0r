@@ -1,7 +1,7 @@
 /*
-jsnotepad, version 3.0.0
+js-dom-notepad, version 3.0.0
 
-Copyright (c) 2016, 2017, 2018, Nicholas Gasior <nmls@laatu.se>
+Copyright (c) 2016, 2017, 2018, 2019 Nicholas Gasior <nicholas@laatu.org>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -156,7 +156,7 @@ done. */
       jsHelper(t_id+_id_cont).append(lns_obj);
 
     /* Generate line numbers. */
-      for (var i=0; i<cnt_lns+extraLines; i++) {
+      for (var i=0; i<cnt_lns+extraLines+2000; i++) {
         ln_nums = ln_nums+(ln_nums!=''?"\n":'')+_pre((i+1).toString());
       }
       jsHelper(id_nums).html(ln_nums);
@@ -308,6 +308,27 @@ done. */
         switch (evt.key) {
           case 'k': 
             _execOnAllActive(function(id) { _removeCurLine(id); });
+            return true;
+            break;
+          case 'y':
+            _execOnAllActive(function(id) {
+              if (!_isNoSelection(id)) {
+                _clearClipboard(id);
+                _addSelectedToClipboard(id);
+              }
+            });
+            return true;
+            break;
+          case 'p':
+            _execOnAllActive(function(id) {
+              var c = _getClipboard(id);
+              if (c != '') {
+                if (!_isNoSelection(id)) {
+                  _removeSelected(id);
+                }
+                _pasteFromClipboard(id);
+              }
+            });
             return true;
             break;
           default: return null; break;
@@ -575,7 +596,6 @@ done. */
         _clearSelection(id);
       }
     }
-    console.log(_getSelection(id));
   }
   
   function _moveCursorUp(id, _, sel) {
@@ -755,15 +775,25 @@ done. */
   function _removeSelected(id) {
     var s = _getSelection(id);
     if (s.beginline == s.endline) {
+      var line = _getLine(id, s.beginline);
+      var left = line.substring(0, s.begincol);
+      var right = line.substring(s.endcol);
+      _replaceLine(id, s.beginline, left + right);
     } else {
       for (var l=s.beginline; l<=s.endline; l++) {
         if (l == s.beginline) {
-        } else if (l == s.endline) {
+          var first_line = _getLine(id, s.beginline);
+          var left = first_line.substring(0, s.begincol);
+          var last_line = _getLine(id, s.endline);
+          var right = last_line.substring(s.endcol);
+          _replaceLine(id, s.beginline, left+right);
         } else {
-          
+          _removeLine(id, s.beginline+1);
         }
       }
-    } 
+    }
+    _setCursorPosition(id, s.beginline, s.begincol);
+    _clearSelection(id); 
   }
   
   function _removeLine(id, line) {
@@ -913,6 +943,42 @@ done. */
     var right = line.substring(pos.col);
     _replaceLine(id, pos.line, left + t + right);
     _moveCursorRight(id, t.length);
+  }
+
+  function _clearClipboard(id) {
+    instances[id]['clipboards']=[];
+  }
+
+  function _addSelectedToClipboard(id) {
+    var s = _getSelection(id);
+    if (s.beginline == s.endline) {
+      var line = _getLine(id, s.beginline);
+      var sel = line.substring(s.begincol, (s.endcol-s.begincol+1));
+      instances[id]['clipboards'][0]=[sel];
+    } else {
+      for (var l=s.beginline; l<=s.endline; l++) {
+        if (l == s.beginline) {
+          var line = _getLine(id, s.beginline);
+          var sel = line.substring(s.begincol);
+          instances[id]['clipboards'][0]=[sel];
+        } else if (l == s.endline) {
+          var line = _getLine(id, l);
+          var sel = line.substring(0, s.endcol);
+          instances[id]['clipboards'][0].push(sel);
+        } else {
+          var line = _getLine(id, l);
+          instances[id]['clipboards'][0].push(line);
+        }
+      }
+    }
+  }
+
+  function _pasteFromClipboard(id) {
+    _insertText(id, instances[id]['clipboards'][0].join("\n"));
+  }
+
+  function _getClipboard(id) {
+    return instances[id]['clipboards'][0];
   }
 
 /* Main initialization method. */

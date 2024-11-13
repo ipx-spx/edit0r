@@ -1,7 +1,7 @@
 /*
-jshelper, version 2.0.6
+js-dom-helper, version 2.0.6
 
-Copyright (c) 2015, 2016, 2017, 2018, Nicholas Gasior <nmls@laatu.se>
+Copyright (c) 2015, 2016, 2017, 2018, 2019, Nicholas Gasior <nicholas@laatu.org>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
